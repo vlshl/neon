@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:NeonUI.ViewModels"
+             xmlns:v="clr-namespace:NeonUI.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NeonUI.Views.MainView"
+             x:DataType="vm:MainVM">
+	<Design.DataContext>
+		<vm:MainVM />
+	</Design.DataContext>
+
+	<DockPanel>
+		<Panel DockPanel.Dock="Top">
+			<v:MessageUC Name="message"></v:MessageUC>
+		</Panel>
+
+		<Menu DockPanel.Dock="Top">
+			<MenuItem Header="Набор">
+				<MenuItem Header="Новый" Command="{Binding NewDatasetCommand}" />
+				<MenuItem Header="Открыть" Command="{Binding OpenDatasetCommand}" />
+				<Separator/>
+				<MenuItem Header="Выход" Command="{Binding ExitCommand}" />
+			</MenuItem>
+			<MenuItem Header="Сеть">
+				<MenuItem Header="Новый" Command="{Binding NewNeuronetCommand}" />
+				<MenuItem Header="Открыть" Command="{Binding OpenNeuronetCommand}" />
+			</MenuItem>
+		</Menu>
+
+		<Grid ColumnDefinitions="*, 3, 3*">
+			<StackPanel Grid.Column="0" Orientation="Vertical">
+				<Expander Header="Наборы данных">
+					<Menu ItemsSource="{Binding DatasetItems}">
+						<Menu.Styles>
+							<Style Selector="MenuItem">
+								<Setter Property="Header" Value="{Binding Header}"/>
+								<Setter Property="Command" Value="{Binding Command}"/>
+							</Style>
+						</Menu.Styles>
+					</Menu>
+				</Expander>
+				<Expander Header="Сети">
+					<Menu ItemsSource="{Binding NeuronetItems}">
+						<Menu.Styles>
+							<Style Selector="MenuItem">
+								<Setter Property="Header" Value="{Binding Header}"/>
+								<Setter Property="Command" Value="{Binding Command}"/>
+							</Style>
+						</Menu.Styles>
+					</Menu>
+				</Expander>
+			</StackPanel>
+			<GridSplitter Grid.Column="1" Background="Gray" ResizeDirection="Columns"/>
+			<Grid Grid.Column="2" Background="LightGray"></Grid>
+		</Grid>
+	</DockPanel>
+</UserControl>

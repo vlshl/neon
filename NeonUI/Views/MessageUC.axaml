@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="50"
+             x:Class="NeonUI.Views.MessageUC">
+	<Border BorderBrush="Gray" BorderThickness="0,0,0,1" Background="Khaki">
+		<Grid ColumnDefinitions="10,*,30">
+			<TextBlock Grid.Column="1" Name="tbMessage" VerticalAlignment="Center" Text="sfsdfnwerwe" />
+			<Button Content="X" Grid.Column="2" Click="OnClose_Click"></Button>
+		</Grid>
+	</Border>
+</UserControl>

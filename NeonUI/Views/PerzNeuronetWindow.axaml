@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:NeonUI.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="NeonUI.Views.PerzNeuronetWindow"
+		Width="800" Height="450" WindowStartupLocation="CenterOwner"
+        Title="PerzNeuronetWindow">
+	<Design.DataContext>
+		<vm:PerzNeuronetVM />
+	</Design.DataContext>
+
+	<TabControl>
+		<TabItem Header="Сеть">
+			<Label Content="{Binding LayerSizes}"></Label>
+			
+			
+		</TabItem>
+		
+		<TabItem Header="Тренировка"></TabItem>
+		<TabItem Header="Тестирование"></TabItem>
+	</TabControl>
+</Window>
