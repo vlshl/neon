@@ -3,7 +3,7 @@
 using Avalonia;
 using Avalonia.ReactiveUI;
 
-namespace NeonUI.Desktop;
+namespace NeonUI;
 
 class Program
 {

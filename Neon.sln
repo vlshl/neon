@@ -13,10 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeonUI", "NeonUI\NeonUI.csproj", "{DD7F0C54-62AB-43A9-92D9-2531A57182DC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeonUI.Desktop", "NeonUI.Desktop\NeonUI.Desktop.csproj", "{F4A9DF6E-11B3-4E3E-B479-0B617289BD2C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NeonUI.Browser", "NeonUI.Browser\NeonUI.Browser.csproj", "{ABEEBD1C-4FA3-4A22-9A77-2B8526036DB3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,14 +39,6 @@ Global
 		{DD7F0C54-62AB-43A9-92D9-2531A57182DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD7F0C54-62AB-43A9-92D9-2531A57182DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD7F0C54-62AB-43A9-92D9-2531A57182DC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4A9DF6E-11B3-4E3E-B479-0B617289BD2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4A9DF6E-11B3-4E3E-B479-0B617289BD2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4A9DF6E-11B3-4E3E-B479-0B617289BD2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4A9DF6E-11B3-4E3E-B479-0B617289BD2C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ABEEBD1C-4FA3-4A22-9A77-2B8526036DB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ABEEBD1C-4FA3-4A22-9A77-2B8526036DB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ABEEBD1C-4FA3-4A22-9A77-2B8526036DB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ABEEBD1C-4FA3-4A22-9A77-2B8526036DB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

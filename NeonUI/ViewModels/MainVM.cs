@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using NeonUI.Views;
+using Avalonia.Platform.Storage;
 
 namespace NeonUI.ViewModels;
 
@@ -50,15 +51,24 @@ public class MainVM : ViewModelBase
     {
         try
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Directory = DatasetManager.Instance.GetDatasetDirectory();
-            var f = new FileDialogFilter();
-            f.Extensions.Add(DatasetManager.Instance.GetDsFileExt());
-            ofd.Filters.Add(f);
-            var res = await ofd.ShowAsync(MainWindow.Instance);
-            if ((res == null) || !res.Any()) return;
+            var sp = MainWindow.Instance.StorageProvider;
+            var fileType = new FilePickerFileType("ds")
+            { 
+                Patterns = new string[] { "*." + DatasetManager.Instance.GetDsFileExt() }
+            };
+            IStorageFolder? dir = await sp.TryGetFolderFromPathAsync(DatasetManager.Instance.GetDatasetDirectory());
+            if (dir == null) return;
 
-            string filepath = res.First();
+            var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Набор данных",
+                AllowMultiple = false, 
+                FileTypeFilter = new[] { fileType }, 
+                SuggestedStartLocation = dir
+            });
+            if (!files.Any()) return;
+
+            var filepath = files.First().Path.AbsolutePath;
             var name = DatasetManager.Instance.OpenDataset(filepath);
             if (string.IsNullOrEmpty(name)) return;
 
@@ -96,15 +106,24 @@ public class MainVM : ViewModelBase
 
     private async void OpenNeuronet()
     {
-        OpenFileDialog ofd = new OpenFileDialog();
-        ofd.Directory = NetworkManager.Instance.GetNeuronetDirectory();
-        var f = new FileDialogFilter();
-        f.Extensions.Add(NetworkManager.Instance.GetNeuronetFileExt());
-        ofd.Filters.Add(f);
-        var res = await ofd.ShowAsync(MainWindow.Instance);
-        if ((res == null) || !res.Any()) return;
+        var sp = MainWindow.Instance.StorageProvider;
+        var fileType = new FilePickerFileType("ds")
+        {
+            Patterns = new string[] { "*." + NetworkManager.Instance.GetNeuronetFileExt() }
+        };
+        IStorageFolder? dir = await sp.TryGetFolderFromPathAsync(NetworkManager.Instance.GetNeuronetDirectory());
+        if (dir == null) return;
 
-        string filepath = res.First();
+        var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Набор данных",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { fileType },
+            SuggestedStartLocation = dir
+        });
+        if (!files.Any()) return;
+
+        var filepath = files.First().Path.AbsolutePath;
         var name = NetworkManager.Instance.OpenNetwork(filepath);
         if (string.IsNullOrEmpty(name)) return;
 
