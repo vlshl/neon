@@ -2,84 +2,116 @@
 using Avalonia.Media.Imaging;
 using Common;
 using ReactiveUI;
+using System.Linq;
 using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
 
 public class DigitsDatasetVM : ViewModelBase
 {
-    private IDataset _ds;
+    private IDataset? _ds;
     private int _dsCount;
     private int _dsIndex;
     private string _info;
-    private string _index;
+    private string _filter;
     private string _label;
+    private string _title;
     private int _imageWidth;
     private int _imageHeight;
     private WriteableBitmap? _imageSource;
 
-    public ICommand PlusCommand { get; set; }
-    public ICommand MinusCommand { get; set; }
+    public ICommand NextCommand { get; set; }
+    public ICommand PrevCommand { get; set; }
+    public ICommand FirstCommand { get; set; }
+    public ICommand LastCommand { get; set; }
+    public ICommand SetFilterCommand { get; set; }
+    public ICommand ClearFilterCommand { get; set; }
 
+    public string Title { get => _title; set => this.RaiseAndSetIfChanged(ref _title, value); }
     public string Info { get => _info; set => this.RaiseAndSetIfChanged(ref _info, value); }
-    public string Index { get => _index; set => this.RaiseAndSetIfChanged(ref _index, value); }
+    public string Filter { get => _filter; set => this.RaiseAndSetIfChanged(ref _filter, value); }
     public string Label { get => _label; set => this.RaiseAndSetIfChanged(ref _label, value); }
     public int ImageWidth { get => _imageWidth; set => this.RaiseAndSetIfChanged(ref _imageWidth, value); }
     public int ImageHeight { get => _imageHeight; set => this.RaiseAndSetIfChanged(ref _imageHeight, value); }
     public WriteableBitmap? ImageSource { get => _imageSource; set => this.RaiseAndSetIfChanged(ref _imageSource, value); }
 
-    public DigitsDatasetVM() 
+    public DigitsDatasetVM()
     {
-        _dsCount = 0;
-        _dsIndex = 0;
+        _ds = null;
         _info = "";
-        _index = "";
+        _filter = "";
         _label = "";
         _imageWidth = 0;
         _imageHeight = 0;
         _imageSource = null;
+        _title = "";
 
-        PlusCommand = ReactiveCommand.Create(() => Plus());
-        MinusCommand = ReactiveCommand.Create(() => Minus());
+        NextCommand = ReactiveCommand.Create(() => { _ds?.Next(); });
+        PrevCommand = ReactiveCommand.Create(() => { _ds?.Prev(); });
+        FirstCommand = ReactiveCommand.Create(() => { _ds?.First(); });
+        LastCommand = ReactiveCommand.Create(() => { _ds?.Last(); });
+        SetFilterCommand = ReactiveCommand.Create(SetFilter);
+        ClearFilterCommand = ReactiveCommand.Create(ClearFilter);
     }
 
     public void Initialize(IDataset ds)
     {
         _ds = ds;
-        _dsCount = ds.GetDatasetSize();
-        //Title = "Набор: " + ds.GetName();
-        Info = "Элеметнов: " + _dsCount.ToString();
-        ShowSample();
+        _ds.OnFilterChange += _ds_OnFilterChange;
+        _ds.OnCurrentChange += _ds_OnCurrentChange;
+        Title = "Набор: " + ds.GetName();
+        _ds_OnFilterChange();
     }
 
-    public void Plus()
+    public void Close()
     {
-        _dsIndex++;
-
-        if (_dsIndex < 0) _dsIndex = _dsCount - 1;
-        if (_dsIndex >= _dsCount) _dsIndex = 0;
-
-        ShowSample();
+        _ds.OnFilterChange -= _ds_OnFilterChange;
+        _ds.OnCurrentChange -= _ds_OnCurrentChange;
     }
 
-    public void Minus()
+    private void _ds_OnCurrentChange()
     {
-        _dsIndex--;
-
-        if (_dsIndex < 0) _dsIndex = _dsCount - 1;
-        if (_dsIndex >= _dsCount) _dsIndex = 0;
-
-        ShowSample();
+        ShowSample(_ds.GetCurrentSample());
     }
 
-    private void ShowSample()
+    private void _ds_OnFilterChange()
     {
-        Index = "Index: " + _dsIndex.ToString();
-        Label = "Label: " + _ds.GetLabel(_dsIndex);
+        if (_ds == null) return;
 
-        var im = _ds.GetImage(_dsIndex);
-        int sizeX = _ds.GetImageSizeX();
-        int sizeY = _ds.GetImageSizeY();
+        var f = _ds.GetFilter();
+        if (f != null && f.Any())
+        {
+            Filter = f.First();
+        }
+        else
+        {
+            Filter = "";
+        }
+
+        Info = "Элеметнов: " + _ds.GetCount().ToString();
+        ShowSample(_ds.GetCurrentSample());
+    }
+
+    private void SetFilter()
+    {
+        _ds?.SetFilter(new string[] { _filter });
+    }
+
+    private void ClearFilter()
+    {
+        _ds?.ClearFilter();
+        Filter = "";
+    }
+
+    private void ShowSample(Sample? sample)
+    {
+        if (sample == null) return;
+
+        Label = "Label: " + sample.Label;
+
+        var im = sample.GetImage();
+        int sizeX = sample.GetImageSizeX();
+        int sizeY = sample.GetImageSizeY();
 
         ImageWidth = sizeX * 5;
         ImageHeight = sizeY * 5;

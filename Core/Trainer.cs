@@ -1,4 +1,5 @@
 ﻿using Common;
+using System;
 
 namespace Core
 {
@@ -22,27 +23,24 @@ namespace Core
 
         public void TrainEpoch(int epochs, CancellationToken cancel)
         {
-            int size = _dataset.GetDatasetSize();
-
             for (int ep = 0; ep < epochs; ++ep) 
             {
                 if (cancel.IsCancellationRequested) break;
 
-                for (int i = 0; i < size; ++i)
+                bool isFirst = _dataset.First();
+                if (isFirst)
                 {
-                    if (cancel.IsCancellationRequested) break;
-                    Train(i);
+                    do
+                    {
+                        var sample = _dataset.GetCurrentSample();
+                        if (sample == null) continue;
+
+                        double[] targets = _converter.ConvertBack(sample.Label);
+                        var inputs = sample.GetData();
+                        _network.Train(inputs, targets);
+                    } while (_dataset.Next());
                 }
             }
         }
-
-        private void Train(int index)
-        {
-            var label = _dataset.GetLabel(index);
-            double[] targets = _converter.ConvertBack(label);
-            var inputs = _dataset.GetSample(index);
-            _network.Train(inputs, targets);
-        }
-
     }
 }

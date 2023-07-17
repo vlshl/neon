@@ -6,7 +6,7 @@
 		mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="300"
 		Width="300" Height="300" WindowStartupLocation="CenterOwner" CanResize="False"
         x:Class="NeonUI.Views.DigitsDatasetWindow"
-        Title="Набор данных">
+        Title="{Binding Title}">
 
 	<Design.DataContext>
 		<vm:DigitsDatasetVM />
@@ -14,11 +14,17 @@
 
 	<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 		<Label Grid.Row="0" Content="{Binding Info}" />
-		<Label Grid.Row="1" Content="{Binding Index}" />
+		<StackPanel Orientation="Horizontal" Grid.Row="1">
+			<TextBox Text="{Binding Filter}" />
+			<Button Command="{Binding SetFilterCommand}">Filter</Button>
+			<Button Command="{Binding ClearFilterCommand}">Clear</Button>
+		</StackPanel>
 
 		<StackPanel Grid.Row="2" Orientation="Horizontal">
-			<Button Name="btnPlus" Command="{Binding PlusCommand}">+</Button>
-			<Button Name="btnMinus" Command="{Binding MinusCommand}">-</Button>
+			<Button Name="btnFirst" Command="{Binding FirstCommand}">First</Button>
+			<Button Name="btnMinus" Command="{Binding PrevCommand}">Prev</Button>
+			<Button Name="btnPlus" Command="{Binding NextCommand}">Next</Button>
+			<Button Name="btnLast" Command="{Binding LastCommand}">Last</Button>
 		</StackPanel>
 
 		<Image Grid.Row="3" 

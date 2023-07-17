@@ -107,7 +107,7 @@ public class MainVM : ViewModelBase
     private async void OpenNeuronet()
     {
         var sp = MainWindow.Instance.StorageProvider;
-        var fileType = new FilePickerFileType("ds")
+        var fileType = new FilePickerFileType("nn")
         {
             Patterns = new string[] { "*." + NetworkManager.Instance.GetNeuronetFileExt() }
         };
@@ -116,7 +116,7 @@ public class MainVM : ViewModelBase
 
         var files = await sp.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Набор данных",
+            Title = "Сеть",
             AllowMultiple = false,
             FileTypeFilter = new[] { fileType },
             SuggestedStartLocation = dir

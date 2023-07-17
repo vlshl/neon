@@ -7,9 +7,16 @@ namespace DigitsDs
     {
         private string[] _labels;
         private byte[][] _images;
-        private int _imgSizeY, _imgSizeX;
+        private int _imgSizeX, _imgSizeY;
         private string _name;
         private readonly DigitsDatasetSettings _settings;
+        private string[]? _filter;
+        private List<int> _filterIndexes;
+        private int _currentIndex;
+        private List<string> _allLabels;
+
+        public event DatasetChangeEH? OnFilterChange;
+        public event DatasetChangeEH? OnCurrentChange;
 
         public DigitsDataset(string name, DigitsDatasetSettings settings)
         {
@@ -17,14 +24,206 @@ namespace DigitsDs
             _settings = settings;
             _labels = new string[0];
             _images = new byte[0][];
-            _imgSizeY = 0;
             _imgSizeX = 0;
-            _name = string.Empty;
+            _imgSizeY = 0;
+
+            _filter = null;
+            _filterIndexes = new List<int>();
+            _currentIndex = -1;
+            _allLabels = new List<string>();
+
+            OnFilterChange = null;
+            OnCurrentChange = null;
         }
 
-        public object GetSettings()
+        public void SetFilter(string[] filter)
         {
-            return _settings;
+            if (filter == null || filter.Length == 0)
+            {
+                ClearFilter();
+            }
+            else
+            {
+                _filter = filter;
+                _filterIndexes.Clear();
+                for (int i = 0; i < _labels.Length; ++i)
+                {
+                    if (_filter.Contains(_labels[i]))
+                    {
+                        _filterIndexes.Add(i);
+                    }
+                }
+
+                if (_filterIndexes.Any())
+                {
+                    _currentIndex = 0;
+                }
+                else
+                {
+                    _currentIndex = -1;
+                }
+                OnFilterChange?.Invoke();
+                OnCurrentChange?.Invoke();
+            }
+        }
+
+        public string[]? GetFilter()
+        {
+            return _filter;
+        }
+
+        public void ClearFilter()
+        {
+            _filter = null;
+            _filterIndexes.Clear();
+            if (_labels.Any())
+            {
+                _currentIndex = 0;
+            }
+            else
+            {
+                _currentIndex = -1;
+            }
+            OnFilterChange?.Invoke();
+            OnCurrentChange?.Invoke();
+        }
+
+        public string[] GetAllLabels()
+        {
+            return _allLabels.ToArray();
+        }
+
+        public int GetCount()
+        {
+            if (_filter == null)
+            {
+                return _labels.Length;
+            }
+            else
+            {
+                return _filterIndexes.Count;
+            }
+        }
+
+        public IEnumerable<Sample> GetSamples(int skip = 0, int take = 0)
+        {
+            List<Sample> samples = new List<Sample>();
+            if (_filter == null)
+            {
+                for (int i = 0; i < _labels.Length; ++i)
+                {
+                    samples.Add(new Sample(_labels[i], _images[i], _imgSizeX, _imgSizeY));
+                }
+            }
+            else
+            {
+                for (int k = 0; k < _filterIndexes.Count; ++k)
+                {
+                    int i = _filterIndexes[k];
+                    samples.Add(new Sample(_labels[i], _images[i], _imgSizeX, _imgSizeY));
+                }
+            }
+
+            if (take > 0)
+            {
+                return samples.Skip(skip).Take(take);
+            }
+            else
+            {
+                return samples.Skip(skip);
+            }
+        }
+
+        public Sample? GetCurrentSample()
+        {
+            if (_currentIndex < 0) return null;
+
+            if (_filter == null)
+            {
+                return new Sample(_labels[_currentIndex], _images[_currentIndex], _imgSizeX, _imgSizeY);
+            }
+            else
+            {
+                int idx = _filterIndexes[_currentIndex];
+                return new Sample(_labels[idx], _images[idx], _imgSizeX, _imgSizeY);
+            }
+        }
+
+        public bool Next()
+        {
+            if (_currentIndex < 0) return false;
+
+            if (_filter == null)
+            {
+                if (_currentIndex < _labels.Length - 1)
+                {
+                    _currentIndex++;
+                    OnCurrentChange?.Invoke();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (_currentIndex < _filterIndexes.Count - 1)
+                {
+                    _currentIndex++;
+                    OnCurrentChange?.Invoke();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool Prev()
+        {
+            if (_currentIndex > 0)
+            {
+                _currentIndex--;
+                OnCurrentChange?.Invoke();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool First()
+        {
+            if (_currentIndex >= 0)
+            {
+                _currentIndex = 0;
+                OnCurrentChange?.Invoke();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool Last()
+        {
+            if (_currentIndex < 0) return false;
+
+            if (_filter == null)
+            {
+                _currentIndex = _labels.Length - 1;
+            }
+            else
+            {
+                _currentIndex = _filterIndexes.Count - 1;
+            }
+            OnCurrentChange?.Invoke();
+
+            return true;
         }
 
         public string GetName()
@@ -32,40 +231,9 @@ namespace DigitsDs
             return _name;
         }
 
-        public string GetLabel(int index)
+        public object GetSettings()
         {
-            if (index < 0 || index >= _images.Length) return "";
-            return _labels[index];
-        }
-
-        public double[] GetSample(int index)
-        {
-            if (index < 0 || index >= _images.Length) return null;
-            var bytes = _images[index];
-
-            return bytes.Select(b => (double)b / 255.0).ToArray();
-        }
-
-        public int GetSampleSize()
-        {
-            return _imgSizeX * _imgSizeY;
-        }
-
-        public int[,] GetImage(int index)
-        {
-            if (index < 0 || index >= _images.Length) return null;
-            var bytes = _images[index];
-
-            int[,] img = new int[_imgSizeX, _imgSizeY];
-            for (int x = 0; x < _imgSizeX; ++x)
-            {
-                for (int y = 0; y < _imgSizeY; ++y)
-                {
-                    img[x, y] = bytes[y * _imgSizeX + x];
-                }
-            }
-
-            return img;
+            return _settings;
         }
 
         public int GetImageSizeX()
@@ -78,17 +246,13 @@ namespace DigitsDs
             return _imgSizeY;
         }
 
-        public int GetDatasetSize()
-        {
-            return _images.Length;
-        }
-
         public void Load()
         {
             try
             {
                 LoadLabels(Path.Combine(_settings.Dir, _settings.LabelsFilename));
                 LoadImages(Path.Combine(_settings.Dir, _settings.ImagesFilename));
+                ClearFilter();
             }
             catch (Exception e)
             {
@@ -105,10 +269,15 @@ namespace DigitsDs
             var count = GetInt32(bytes, index);
             index += 4;
             _labels = new string[count];
-
+            _allLabels.Clear();
             for (int i = 0; i < count; ++i)
             {
-                _labels[i] = bytes[index++].ToString();
+                string label = bytes[index++].ToString();
+                if (!_allLabels.Contains(label))
+                {
+                    _allLabels.Add(label);
+                }
+                _labels[i] = label;
             }
         }
 

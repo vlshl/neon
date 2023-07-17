@@ -19,5 +19,11 @@ namespace NeonUI.Views
         {
             _vm.Initialize(ds);
         }
+
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            base.OnClosing(e);
+            _vm.Close();
+        }
     }
 }
