@@ -279,6 +279,7 @@ namespace DigitsDs
                 }
                 _labels[i] = label;
             }
+            _allLabels.Sort();
         }
 
         private void LoadImages(string filepath)

@@ -40,6 +40,8 @@ namespace Core
                         _network.Train(inputs, targets);
                     } while (_dataset.Next());
                 }
+
+                NetworkManager.Instance.OnTrain(_network);
             }
         }
     }

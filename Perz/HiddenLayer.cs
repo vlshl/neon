@@ -15,6 +15,9 @@ namespace Perz
 
         public void Train()
         {
+            if (nextLayer == null) return;
+
+
             for (int i = 0; i < size; ++i)
             {
                 double sum = 0;

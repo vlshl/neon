@@ -10,7 +10,7 @@ namespace Perz
     public abstract class Layer : ILayer
     {
         protected ILayer prevLayer;
-        protected Layer nextLayer;
+        protected Layer? nextLayer;
         protected int size;
         protected double[] outputs;
         protected double[,] weights;

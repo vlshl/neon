@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Perz
+﻿namespace Perz
 {
     public class OutputLayer : Layer
     {
@@ -16,7 +10,8 @@ namespace Perz
         {
             for (int i = 0; i < size; ++i)
             {
-                deltas[i] = -outputs[i] * (1 - outputs[i]) * (targets[i] - outputs[i]);
+                double t = i < targets.Length ? targets[i] : 0;
+                deltas[i] = -outputs[i] * (1 - outputs[i]) * (t - outputs[i]);
             }
 
             for (int i = 0; i < weights.GetLength(0); ++i)

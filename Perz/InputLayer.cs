@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,11 +16,36 @@ namespace Perz
         {
             _size = size;
             _arr = new double[size];
+            for (int i = 0; i < size; ++i)
+            {
+                _arr[i] = 0;
+            }
         }
 
         public double[] Outputs { get { return _arr; } }
 
-        public double[] Inputs { get { return _arr; } set { _arr = value; } }
+        public double[] Inputs 
+        { 
+            get 
+            { 
+                return _arr; 
+            } 
+            set 
+            { 
+                for (int i = 0; i < _size; ++i) 
+                {
+                    if (i < value.Length)
+                    {
+                        _arr[i] = value[i];
+                    }
+                    else
+                    {
+                        _arr[i] = 0;
+                    }
+                
+                }
+            } 
+        }
 
         public int Size { get { return _size; } }
     }

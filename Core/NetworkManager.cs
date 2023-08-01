@@ -3,14 +3,19 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Perz;
 using System.Data;
+using System.Net.NetworkInformation;
 
 namespace Core
 {
+    public delegate void NeunonetChangeEH(INetwork net, string e);
+
     public class NetworkManager
     {
         private static NetworkManager? _instance = null;
         private Dictionary<string, INetwork> _nets;
         private string _nnPath;
+
+        public event NeunonetChangeEH OnNeuronetChange;
 
         public static NetworkManager Instance
         {
@@ -32,6 +37,16 @@ namespace Core
             _nnPath = path;
         }
 
+        public void OnTrain(INetwork net)
+        {
+            OnNeuronetChange?.Invoke(net, "train");
+        }
+
+        public void OnExec(INetwork net)
+        {
+            OnNeuronetChange?.Invoke(net, "exec");
+        }
+
         public bool CreateNetwork(string name, object settings)
         {
             if (settings is PerzSettings)
@@ -43,7 +58,7 @@ namespace Core
                 var nns = new NeuronetSettings();
                 nns.Class = typeof(PerzNetwork).Name;
                 nns.Settings = s;
-                nns.Weights = n.GetWeights();
+                nns.Weights = n.GetAllWeights();
 
                 string json = JsonConvert.SerializeObject(nns, Formatting.Indented);
                 string filepath = Path.Combine(GetNeuronetDirectory(), name + "." + GetNeuronetFileExt());
@@ -79,16 +94,21 @@ namespace Core
             return null;
         }
 
-        //public void SaveNetwork(INetwork network, string path)
-        //{
-        //    var nns = new NeuronetSettings();
-        //    nns.Class = network.GetType().Name;
-        //    nns.Settings = network.GetSettings();
-        //    nns.Weights = network.GetWeights();
+        public bool SaveNetwork(INetwork net, string name)
+        {
+            if (net == null) return false;
 
-        //    string json = JsonConvert.SerializeObject(nns, Formatting.Indented);
-        //    File.WriteAllText(path, json);
-        //}
+            var nns = new NeuronetSettings();
+            nns.Class = typeof(PerzNetwork).Name;
+            nns.Settings = net.GetSettings();
+            nns.Weights = net.GetAllWeights();
+
+            string json = JsonConvert.SerializeObject(nns, Formatting.Indented);
+            string filepath = Path.Combine(GetNeuronetDirectory(), name + "." + GetNeuronetFileExt());
+            File.WriteAllText(filepath, json);
+
+            return true;
+        }
 
         public void CloseNetwork(string name)
         {
@@ -116,6 +136,63 @@ namespace Core
         {
             return _nets.Keys.ToArray();
         }
+
+
+
+        private const string INPUT = "input";
+        private const string OUTPUT = "output";
+        private const string HIDDEN = "hidden";
+
+        public string[] GetDataKeys(INetwork net)
+        {
+            List<string> keys = new List<string>();
+            var pn = net as PerzNetwork;
+            if (pn != null)
+            {
+                keys.Add(OUTPUT);
+                keys.Add(INPUT);
+                int hidCount = pn.GetHiddenLayersCount();
+                for (int i = 0; i < hidCount; ++i)
+                {
+                    keys.Add(HIDDEN + (i + 1).ToString());
+                }
+            }
+
+            return keys.ToArray();
+        }
+
+        public double[] GetDataByKey(INetwork net, string key)
+        {
+            var pn = net as PerzNetwork;
+            if (pn != null)
+            {
+                if (key == INPUT) return pn.GetOutputs(-1);
+                if (key == OUTPUT) return pn.GetOutputs(0);
+                if (key.StartsWith(HIDDEN))
+                {
+                    string k = key.Remove(0, HIDDEN.Length);
+                    int h;
+                    if (int.TryParse(k, out h))
+                    {
+                        return pn.GetOutputs(h);
+                    }
+                }
+
+            }
+
+            return new double[0];
+        }
+
+
+
+
+
+
+
+
+
+
+
     }
 
     public class NeuronetSettings

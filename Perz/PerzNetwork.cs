@@ -51,7 +51,12 @@ namespace Perz
             return _settings;
         }
 
-        public IEnumerable<double[,]> GetWeights()
+        public int GetHiddenLayersCount()
+        {
+            return _hiddenLayers.Count;
+        }
+
+        public IEnumerable<double[,]> GetAllWeights()
         {
             var weights = new List<double[,]>();
             weights.Add(_outputLayer.Weights);
@@ -62,6 +67,26 @@ namespace Perz
             }
 
             return weights;
+        }
+
+        /// <summary>
+        /// Получить массий весов указанного слоя
+        /// </summary>
+        /// <param name="layer">Слой: 0-выходной, 1...-скрытые</param>
+        /// <returns>Массив чисел. Если массив размером 0x0 - неверный аргумент</returns>
+        public double[,] GetWeights(int layer = 0)
+        {
+            if (layer == 0)
+            {
+                return _outputLayer.Weights;
+            }
+
+            if (layer - 1 < _hiddenLayers.Count)
+            {
+                return _hiddenLayers[layer - 1].Weights;
+            }
+
+            return new double[0, 0];
         }
 
         public void LoadWeights(IEnumerable<double[,]>? weights)
@@ -96,7 +121,7 @@ namespace Perz
         /// Получить выходы слоя
         /// </summary>
         /// <param name="layer">Слой: 0-выходной, 1...-скрытые, -1-входной</param>
-        /// <returns>Массив чисел. Если пустой массив - неверный аргумент</returns>
+        /// <returns>Массив чисел. Если массив размером 0 - неверный аргумент</returns>
         public double[] GetOutputs(int layer = 0)
         {
             if (layer == 0)

@@ -1,76 +1,49 @@
 ﻿using Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perz
 {
     public class PerzConverter : INetworkConverter
     {
+        private string[] _labels;
+        private int _size;
+
+        public PerzConverter(string[] labels)
+        {
+            if ((labels == null) || (labels.Length < 1)) 
+                throw new ArgumentOutOfRangeException("labels");
+            _labels = labels;
+            _size = labels.Length;
+        }
+
         public string Convert(double[] outputs)
         {
             if ((outputs == null) || (outputs.Length == 0)) return "";
 
             double max = outputs[0];
-            int res = 0;
-            for (int i = 1; i < outputs.Length; ++i)
+            int idx = 0;
+            for (int i = 1; i < _size; ++i)
             {
-                double d = outputs[i];
+                double d = i < outputs.Length ? outputs[i] : 0;
                 if (d > max)
                 {
-                    res = i;
+                    idx = i;
                     max = d;
                 }
             }
 
-            return res.ToString();
+            return _labels[idx];
         }
 
         public double[] ConvertBack(string label)
         {
-            double[] arr = new double[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            double[] arr = new double[_size];
+            for (int i = 0; i < _size; ++i) arr[i] = 0;
 
-            if (label == "0")
+
+            int found = Array.FindIndex(_labels, r => r == label);
+            if (found >= 0)
             {
-                arr[0] = 1;
-            }
-            else if (label == "1")
-            {
-                arr[1] = 1;
-            }
-            else if (label == "2")
-            {
-                arr[2] = 1;
-            }
-            else if (label == "3")
-            {
-                arr[3] = 1;
-            }
-            else if (label == "4")
-            {
-                arr[4] = 1;
-            }
-            else if (label == "5")
-            {
-                arr[5] = 1;
-            }
-            else if (label == "6")
-            {
-                arr[6] = 1;
-            }
-            else if (label == "7")
-            {
-                arr[7] = 1;
-            }
-            else if (label == "8")
-            {
-                arr[8] = 1;
-            }
-            else if (label == "9")
-            {
-                arr[9] = 1;
+                arr[found] = 1;
             }
 
             return arr;

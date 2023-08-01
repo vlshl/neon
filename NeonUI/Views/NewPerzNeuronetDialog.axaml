@@ -2,11 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="300"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
 		xmlns:vm="using:NeonUI.ViewModels"
         xmlns:v="using:NeonUI.Views"
         x:Class="NeonUI.Views.NewPerzNeuronetDialog"
-		Width="800" Height="300"
+		Width="600" Height="300" CanResize="False" WindowStartupLocation="CenterOwner"
         Title="Новая сеть Перцептрон">
 	<Design.DataContext>
 		<vm:NewPerzNeuronetVM />
@@ -20,26 +20,20 @@
 			<Button Command="{Binding CancelCommand}" Width="100">Отмена</Button>
 		</StackPanel>
 
-		<Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="2*,1*,1*,1*" Margin="5">
+		<Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="1*,2*" Margin="5">
 			<Label Grid.Row="0" Grid.Column="0" Content="Наименование:"/>
-			<TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Name}"></TextBox>
+			<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBox>
 
 			<Label Grid.Row="1" Grid.Column="0" Content="Размер входного слоя:"/>
 			<NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding InputLayerSize}" Minimum="1"></NumericUpDown>
-			<Label Grid.Row="1" Grid.Column="2" Content=" Размер XY:" HorizontalAlignment="Right"/>
-			<TextBox Grid.Row="1" Grid.Column="3" Text="{Binding InputLayerXY}" />
 
 			<Label Grid.Row="2" Grid.Column="0" Content="Размер выходного слоя:"/>
 			<NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding OutputLayerSize}" Minimum="1"></NumericUpDown>
-			<Label Grid.Row="2" Grid.Column="2" Content="Размер XY:" HorizontalAlignment="Right" />
-			<TextBox Grid.Row="2" Grid.Column="3" Text="{Binding OutputLayerXY}" />
 
 			<Label Grid.Row="3" Grid.Column="0" Content="Размеры скрытых слоев:"/>
 			<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding HiddenLayers}"></TextBox>
-			<Label Grid.Row="3" Grid.Column="2" Content="Размер XY:" HorizontalAlignment="Right"/>
-			<TextBox Grid.Row="3" Grid.Column="3" Text="{Binding HiddenLayersXY}" />
 
-			<TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" TextWrapping="Wrap" FontSize="12"
+			<TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" FontSize="12"
 					   Text="Данные по скрытым слоям вводятся через запятую. Порядок - от входного слоя к выходному. Если скрытых слоев нет, поле пустое." />
 		</Grid>
 	</DockPanel>
