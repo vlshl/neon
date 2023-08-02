@@ -13,6 +13,7 @@ namespace NeonUI.Views
             InitializeComponent();
             _vm = new DigitsDatasetVM();
             DataContext = _vm;
+            _vm.CloseWindow = Close;
         }
 
         public void Initialize(IDataset ds)

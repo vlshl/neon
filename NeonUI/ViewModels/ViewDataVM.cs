@@ -11,7 +11,7 @@ using System.Windows.Input;
 
 namespace NeonUI.ViewModels
 {
-    public class ViewDataVM : ViewModelBase
+    public class ViewDataVM : WindowViewModel
     {
         private INetwork? _net;
         private string _dataKey;

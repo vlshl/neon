@@ -11,15 +11,13 @@ using Avalonia.Platform.Storage;
 
 namespace NeonUI.ViewModels;
 
-public class MainVM : ViewModelBase
+public class MainVM : WindowViewModel
 {
     public ICommand NewDatasetCommand { get; set; }
     public ICommand OpenDatasetCommand { get; set; }
     public ICommand NewNeuronetCommand { get; set; }
     public ICommand OpenNeuronetCommand { get; set; }
     public ICommand ExitCommand { get; set; }
-
-    public Action? OnExit { get; set; }
 
     public ObservableCollection<MenuItemVM> DatasetItems { get; set; }
     public ObservableCollection<MenuItemVM> NeuronetItems { get; set; }
@@ -36,9 +34,8 @@ public class MainVM : ViewModelBase
         OpenNeuronetCommand = ReactiveCommand.Create(() => OpenNeuronet());
         NeuronetItems = new ObservableCollection<MenuItemVM>();
 
-        ExitCommand = ReactiveCommand.Create(() => Exit());
+        ExitCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
         MessagePanel = null;
-        OnExit = null;
     }
 
     private void NewDataset()
@@ -73,18 +70,21 @@ public class MainVM : ViewModelBase
             if (string.IsNullOrEmpty(name)) return;
 
             OpenDataset(name);
-
-            // добавить в список
-            DatasetItems.Clear();
-            string[] items = DatasetManager.Instance.GetDatasets();
-            foreach (string item in items)
-            {
-                DatasetItems.Add(new MenuItemVM() { Header = item, Command = ReactiveCommand.Create(() => OpenDataset(item)) });
-            }
+            RefreshDsItems();
         }
         catch(Exception ex)
         {
             MessagePanel?.ShowException(ex);
+        }
+    }
+
+    public void RefreshDsItems()
+    {
+        DatasetItems.Clear();
+        string[] items = DatasetManager.Instance.GetDatasets();
+        foreach (string item in items)
+        {
+            DatasetItems.Add(new MenuItemVM() { Header = item, Command = ReactiveCommand.Create(() => OpenDataset(item)) });
         }
     }
 
@@ -146,10 +146,5 @@ public class MainVM : ViewModelBase
         var win = new PerzNeuronetWindow();
         win.Initialize(nn);
         win.Show(MainWindow.Instance);
-    }
-
-    private void Exit()
-    {
-        OnExit?.Invoke();
     }
 }

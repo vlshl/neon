@@ -1,13 +1,15 @@
 ﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Common;
+using Core;
+using NeonUI.Views;
 using ReactiveUI;
 using System.Linq;
 using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
 
-public class DigitsDatasetVM : ViewModelBase
+public class DigitsDatasetVM : WindowViewModel
 {
     private IDataset? _ds;
     private int _dsCount;
@@ -26,6 +28,8 @@ public class DigitsDatasetVM : ViewModelBase
     public ICommand LastCommand { get; set; }
     public ICommand SetFilterCommand { get; set; }
     public ICommand ClearFilterCommand { get; set; }
+    public ICommand CloseWinCommand { get; set; }
+    public ICommand CloseDsCommand { get; set; }
 
     public string Title { get => _title; set => this.RaiseAndSetIfChanged(ref _title, value); }
     public string Info { get => _info; set => this.RaiseAndSetIfChanged(ref _info, value); }
@@ -52,6 +56,8 @@ public class DigitsDatasetVM : ViewModelBase
         LastCommand = ReactiveCommand.Create(() => { _ds?.Last(); });
         SetFilterCommand = ReactiveCommand.Create(SetFilter);
         ClearFilterCommand = ReactiveCommand.Create(ClearFilter);
+        CloseWinCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
+        CloseDsCommand = ReactiveCommand.Create(CloseDs);
     }
 
     public void Initialize(IDataset ds)
@@ -59,14 +65,26 @@ public class DigitsDatasetVM : ViewModelBase
         _ds = ds;
         _ds.OnFilterChange += _ds_OnFilterChange;
         _ds.OnCurrentChange += _ds_OnCurrentChange;
-        Title = "Набор: " + ds.GetName();
+        Title = ds.GetName();
         _ds_OnFilterChange();
     }
 
     public void Close()
     {
+        if (_ds == null) return;
+
         _ds.OnFilterChange -= _ds_OnFilterChange;
         _ds.OnCurrentChange -= _ds_OnCurrentChange;
+    }
+
+    private void CloseDs()
+    {
+        if (_ds == null) return;
+
+        DatasetManager.Instance.CloseDataset(_ds.GetName());
+        var mainVm = MainWindow.Instance.DataContext as MainVM;
+        if (mainVm != null) mainVm.RefreshDsItems();
+        CloseWindow?.Invoke();
     }
 
     private void _ds_OnCurrentChange()
@@ -107,7 +125,7 @@ public class DigitsDatasetVM : ViewModelBase
     {
         if (sample == null) return;
 
-        Label = "Label: " + sample.Label;
+        Label = sample.Label;
 
         var im = sample.GetImage();
         int sizeX = sample.GetImageSizeX();

@@ -3,8 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:NeonUI.ViewModels"
-		mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="300"
-		Width="300" Height="300" WindowStartupLocation="CenterOwner" CanResize="False"
+		mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+		WindowStartupLocation="CenterOwner" CanResize="False" SizeToContent="WidthAndHeight"
         x:Class="NeonUI.Views.DigitsDatasetWindow"
         Title="{Binding Title}">
 
@@ -14,24 +14,63 @@
 
 	<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 		<Label Grid.Row="0" Content="{Binding Info}" />
-		<StackPanel Orientation="Horizontal" Grid.Row="1">
+		
+		<StackPanel Grid.Row="1" Orientation="Horizontal">
+			<StackPanel.Styles>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="5"></Setter>
+					<Setter Property="Width" Value="100"></Setter>
+				</Style>
+			</StackPanel.Styles>
+			<Label Content="Фильтр:"/>
 			<TextBox Text="{Binding Filter}" />
-			<Button Command="{Binding SetFilterCommand}">Filter</Button>
-			<Button Command="{Binding ClearFilterCommand}">Clear</Button>
+			<Button Command="{Binding SetFilterCommand}">Отобрать</Button>
+			<Button Command="{Binding ClearFilterCommand}">Очистить</Button>
 		</StackPanel>
 
-		<StackPanel Grid.Row="2" Orientation="Horizontal">
-			<Button Name="btnFirst" Command="{Binding FirstCommand}">First</Button>
-			<Button Name="btnMinus" Command="{Binding PrevCommand}">Prev</Button>
-			<Button Name="btnPlus" Command="{Binding NextCommand}">Next</Button>
-			<Button Name="btnLast" Command="{Binding LastCommand}">Last</Button>
+		<Grid Grid.Row="2" ColumnDefinitions="100,Auto">
+			<Label Grid.Column="0" Content="{Binding Label}" FontSize="20" HorizontalAlignment="Center" />
+
+			<Image Grid.Column="1" Width="{Binding ImageWidth}"
+				   Height="{Binding ImageHeight}"
+				   Source="{Binding ImageSource}" />
+		</Grid>
+
+		<StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+			<StackPanel.Styles>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="5"></Setter>
+					<Setter Property="Width" Value="50"></Setter>
+				</Style>
+				<Style Selector="Image">
+					<Setter Property="Width" Value="16"/>
+					<Setter Property="Height" Value="16"/>
+				</Style>
+			</StackPanel.Styles>
+			<Button Name="btnFirst" Command="{Binding FirstCommand}" ToolTip.Tip="Первый">
+				<Image Source="avares://NeonUI/Assets/first.png" />
+			</Button>
+			<Button Name="btnMinus" Command="{Binding PrevCommand}" ToolTip.Tip="Предыдущий">
+				<Image Source="avares://NeonUI/Assets/prev.png" />
+			</Button>
+			<Button Name="btnPlus" Command="{Binding NextCommand}" ToolTip.Tip="Следующий">
+				<Image Source="avares://NeonUI/Assets/next.png" />
+			</Button>
+			<Button Name="btnLast" Command="{Binding LastCommand}" ToolTip.Tip="Последний">
+				<Image Source="avares://NeonUI/Assets/last.png" />
+			</Button>
 		</StackPanel>
 
-		<Image Grid.Row="3" 
-			   Width="{Binding ImageWidth}" 
-			   Height="{Binding ImageHeight}" 
-			   Source="{Binding ImageSource}" />
-		<Label Grid.Row="4" Content="{Binding Label}" />
+		<StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center">
+			<StackPanel.Styles>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="5"></Setter>
+					<Setter Property="Width" Value="150"></Setter>
+				</Style>
+			</StackPanel.Styles>
+			<Button Command="{Binding CloseWinCommand}" ToolTip.Tip="Закрыть окно, источник остается открытым">Закрыть</Button>
+			<Button Command="{Binding CloseDsCommand}" ToolTip.Tip="Закрыть окно и выгрузить источник данных">Выгрузить</Button>
+		</StackPanel>
 	</Grid>
 
 </Window>

@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
 
-public class MenuItemVM
+public class MenuItemVM : ViewModelBase
 {
     public string Header { get; set; }
     public ICommand Command { get; set; }

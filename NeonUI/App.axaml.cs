@@ -24,7 +24,9 @@ public partial class App : Application
             mw.DataContext = vm;
             vm.MessagePanel = mw.MessagePanel;
             desktop.MainWindow = mw;
-            vm.OnExit = () => { desktop.Shutdown(); };
+            vm.CloseWindow = () => { 
+                desktop.Shutdown(); 
+            };
         }
         //else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         //{

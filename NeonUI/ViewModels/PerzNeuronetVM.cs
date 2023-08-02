@@ -13,7 +13,7 @@ using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
 
-public class PerzNeuronetVM : ViewModelBase
+public class PerzNeuronetVM : WindowViewModel
 {
     public ICommand ExecuteCurrentCommand { get; set; }
     public ICommand ViewDataCommand { get; set; }

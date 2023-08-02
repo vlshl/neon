@@ -15,7 +15,7 @@ namespace NeonUI.Views
             vm.MessagePanel = message;
         }
 
-        public void CloseDialog(bool dialogResult)
+        private void CloseDialog(bool dialogResult)
         {
             this.Close(dialogResult);
         }

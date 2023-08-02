@@ -17,6 +17,5 @@ namespace NeonUI.Views
             InitializeComponent();
             Instance = this;
         }
-
     }
 }
