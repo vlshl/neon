@@ -26,5 +26,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Dataset\Dataset.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\MnistDatasetWindow.axaml.cs">
+      <DependentUpon>MnistDatasetWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\NewMnistDatasetDialog.axaml.cs">
+      <DependentUpon>NewMnistDatasetDialog.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

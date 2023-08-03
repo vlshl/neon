@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Perz", "Perz\Perz.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{0A94C96E-0F28-4DC3-9AD4-E62F8A6F4D1A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigitsDs", "DigitsDataset\DigitsDs.csproj", "{9903E138-CC16-49B3-8F4D-56532A29C70D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dataset", "Dataset\Dataset.csproj", "{9903E138-CC16-49B3-8F4D-56532A29C70D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{E270FD7E-BBAB-46F1-9F3C-7C0E292F1407}"
 EndProject

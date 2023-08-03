@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\DigitsDataset\DigitsDs.csproj" />
+    <ProjectReference Include="..\Dataset\Dataset.csproj" />
     <ProjectReference Include="..\Perz\Perz.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,9 @@
 ﻿using Common;
-using DigitsDs;
+using Dataset;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.IO;
+using System.Linq;
 
 namespace Core
 {
@@ -31,18 +33,18 @@ namespace Core
             _dsPath = dsPath;
         }
 
-        public bool CreateDataset(string name, object settings)
+        public bool CreateDataset(string filename, object settings)
         {
-            if ( settings is DigitsDatasetSettings)
+            if (settings is MnistSettings)
             {
-                DigitsDatasetSettings s = (DigitsDatasetSettings)settings;
+                MnistSettings s = (MnistSettings)settings;
 
                 var dss = new DatasetSettings();
-                dss.Class = typeof(DigitsDataset).Name;
+                dss.Class = typeof(MnistDataset).Name;
                 dss.Settings = s;
 
                 string json = JsonConvert.SerializeObject(dss, Formatting.Indented);
-                string filepath = Path.Combine(GetDatasetDirectory(), name + "." + GetDsFileExt());
+                string filepath = Path.Combine(GetDatasetDirectory(), filename + "." + GetDsFileExt());
                 File.WriteAllText(filepath, json);
 
                 return true;
@@ -51,40 +53,53 @@ namespace Core
             return false;
         }
 
-        public string? OpenDataset(string path)
+        public bool OpenDataset(string path)
         {
-            string name = Path.GetFileNameWithoutExtension(path);
-            if (_datasets.ContainsKey(name)) return null;
+            string fullpath = Path.GetFullPath(path);
+            if (_datasets.ContainsKey(fullpath)) return false;
 
-            string json = File.ReadAllText(path);
-            var dss = JsonConvert.DeserializeObject<DatasetSettings>(json);
-            if (dss == null) return null;
-
-            if (dss.Class == typeof(DigitsDataset).Name)
+            try
             {
-                var settings = (dss.Settings as JObject).ToObject<DigitsDatasetSettings>();
-                if (settings == null) return null;
+                string json = File.ReadAllText(fullpath);
+                var dss = JsonConvert.DeserializeObject<DatasetSettings>(json);
+                if (dss == null) return false;
 
-                var ds = new DigitsDataset(name, settings);
-                ds.Load();
-                _datasets[name] = ds;
+                if (dss.Class == typeof(MnistDataset).Name)
+                {
+                    var settings = (dss.Settings as JObject).ToObject<MnistSettings>();
+                    if (settings == null) return false;
 
-                return name;
+                    var ds = new MnistDataset(settings);
+                    ds.Load();
+                    _datasets[fullpath] = ds;
+
+                    return true;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Ошибка при открытии набора данных", ex);
             }
 
-            return null;
+            return false;
         }
 
-        public void CloseDataset(string name)
+        public void CloseDataset(IDataset ds)
         {
-            if (!_datasets.ContainsKey(name)) { return; }
-            _datasets.Remove(name);
+            if (ds == null) return;
+
+            var keys = _datasets.Where(r => r.Value == ds).Select(r => r.Key).ToList();
+            foreach (var key in keys)
+            {
+                _datasets.Remove(key);
+            }
         }
 
-        public IDataset? GetDataset(string name)
+        public IDataset? GetDataset(string path)
         {
-            if (!_datasets.ContainsKey(name)) { return null; }
-            return _datasets[name];
+            string fullpath = Path.GetFullPath(path);
+            if (!_datasets.ContainsKey(fullpath)) { return null; }
+            return _datasets[fullpath];
         }
 
         public string GetDatasetDirectory()
@@ -97,9 +112,16 @@ namespace Core
             return "ds";
         }
 
-        public string[] GetDatasets()
+        public string[] GetDatasetPaths()
         {
             return _datasets.Keys.ToArray();
+        }
+
+        public string GetDatasetName(string path)
+        {
+            string fullpath = Path.GetFullPath(path);
+            if (!_datasets.ContainsKey(fullpath)) { return ""; }
+            return _datasets[fullpath].GetName();
         }
     }
 

@@ -17,10 +17,18 @@
 			<Setter Property="VerticalAlignment" Value="Center"></Setter>
 		</Style>
 
+		<Style Selector="ComboBox">
+			<Setter Property="Height" Value="32" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="VerticalAlignment" Value="Center"></Setter>
+		</Style>
+
 		<Style Selector="Button">
 			<Setter Property="Background" Value="LightGray" />
 			<Setter Property="BorderBrush" Value="Gray"></Setter>
 			<Setter Property="CornerRadius" Value="0"></Setter>
+			<Setter Property="Height" Value="32" />
 		</Style>
 
 		<Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">

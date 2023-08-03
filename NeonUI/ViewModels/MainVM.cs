@@ -19,8 +19,8 @@ public class MainVM : WindowViewModel
     public ICommand OpenNeuronetCommand { get; set; }
     public ICommand ExitCommand { get; set; }
 
-    public ObservableCollection<MenuItemVM> DatasetItems { get; set; }
-    public ObservableCollection<MenuItemVM> NeuronetItems { get; set; }
+    public ObservableCollection<MenuItem> DatasetItems { get; set; }
+    public ObservableCollection<MenuItem> NeuronetItems { get; set; }
 
     public IMessagePanel? MessagePanel { get; set; }
 
@@ -28,11 +28,11 @@ public class MainVM : WindowViewModel
     {
         NewDatasetCommand = ReactiveCommand.Create(() => NewDataset());
         OpenDatasetCommand = ReactiveCommand.Create(() => OpenDataset());
-        DatasetItems = new ObservableCollection<MenuItemVM>();
+        DatasetItems = new ObservableCollection<MenuItem>();
 
         NewNeuronetCommand = ReactiveCommand.Create(() => NewNeuronet());
         OpenNeuronetCommand = ReactiveCommand.Create(() => OpenNeuronet());
-        NeuronetItems = new ObservableCollection<MenuItemVM>();
+        NeuronetItems = new ObservableCollection<MenuItem>();
 
         ExitCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
         MessagePanel = null;
@@ -40,7 +40,7 @@ public class MainVM : WindowViewModel
 
     private void NewDataset()
     {
-        var dlg = new NewDigitsDatasetDialog();
+        var dlg = new NewMnistDatasetDialog();
         dlg.ShowDialog(MainWindow.Instance);
     }
 
@@ -65,11 +65,11 @@ public class MainVM : WindowViewModel
             });
             if (!files.Any()) return;
 
-            var filepath = files.First().Path.AbsolutePath;
-            var name = DatasetManager.Instance.OpenDataset(filepath);
-            if (string.IsNullOrEmpty(name)) return;
+            var path = files.First().Path.AbsolutePath;
+            bool isSuccess = DatasetManager.Instance.OpenDataset(path);
+            if (!isSuccess) return;
 
-            OpenDataset(name);
+            OpenDataset(path);
             RefreshDsItems();
         }
         catch(Exception ex)
@@ -81,19 +81,20 @@ public class MainVM : WindowViewModel
     public void RefreshDsItems()
     {
         DatasetItems.Clear();
-        string[] items = DatasetManager.Instance.GetDatasets();
-        foreach (string item in items)
+        string[] paths = DatasetManager.Instance.GetDatasetPaths();
+        foreach (string path in paths)
         {
-            DatasetItems.Add(new MenuItemVM() { Header = item, Command = ReactiveCommand.Create(() => OpenDataset(item)) });
+            string name = DatasetManager.Instance.GetDatasetName(path);
+            DatasetItems.Add(new MenuItem() { Header = name, Command = ReactiveCommand.Create(() => OpenDataset(path)) });
         }
     }
 
-    private void OpenDataset(string name)
+    private void OpenDataset(string path)
     {
-        var ds = DatasetManager.Instance.GetDataset(name);
+        var ds = DatasetManager.Instance.GetDataset(path);
         if (ds == null) return;
 
-        var win = new DigitsDatasetWindow();
+        var win = new MnistDatasetWindow();
         win.Initialize(ds);
         win.Show(MainWindow.Instance);
     }
@@ -134,7 +135,7 @@ public class MainVM : WindowViewModel
         string[] items = NetworkManager.Instance.GetNetworks();
         foreach (string item in items)
         {
-            NeuronetItems.Add(new MenuItemVM() { Header = item, Command = ReactiveCommand.Create(() => OpenNeuronet(item)) });
+            NeuronetItems.Add(new MenuItem() { Header = item, Command = ReactiveCommand.Create(() => OpenNeuronet(item)) });
         }
     }
 
