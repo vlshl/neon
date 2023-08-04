@@ -21,6 +21,8 @@ public class PerzNeuronetVM : WindowViewModel
     public ICommand ExecuteCurrentCommand { get; set; }
     public ICommand ViewDataCommand { get; set; }
     public ICommand TrainEpochCommand { get; set; }
+    public ICommand TrainCurrentCommand { get; set; }
+    public ICommand InitWeightsCommand { get; set; }
     public ICommand TestCommand { get; set; }
     public ICommand SaveAsNetworkCommand { get; set; }
     public ICommand RefreshDatasetItemsCommand { get; set; }
@@ -37,6 +39,7 @@ public class PerzNeuronetVM : WindowViewModel
     private string _execCurRes;
     private string _testRes;
     private string _saveAsNetworkName;
+    private bool _isZeroInitWeights;
 
     public PerzNeuronetVM()
     {
@@ -51,6 +54,7 @@ public class PerzNeuronetVM : WindowViewModel
         _dataKeyList = new string[0];
         _execCurRes = "";
         _testRes = "";
+        _isZeroInitWeights = true;
 
         DatasetItems = new ObservableCollection<ComboBoxItem>();
         TrainDatasetItems = new ObservableCollection<ComboBoxItem>();
@@ -60,6 +64,8 @@ public class PerzNeuronetVM : WindowViewModel
         ExecuteCurrentCommand = ReactiveCommand.Create(ExecuteCurrent);
         ViewDataCommand = ReactiveCommand.Create(ViewData);
         TrainEpochCommand = ReactiveCommand.Create(TrainEpoch);
+        TrainCurrentCommand = ReactiveCommand.Create(TrainCurrent);
+        InitWeightsCommand = ReactiveCommand.Create(InitWeights);
         SaveAsNetworkCommand = ReactiveCommand.Create(SaveAsNetwork);
         RefreshDatasetItemsCommand = ReactiveCommand.Create(RefreshDatasetItems);
         TestCommand = ReactiveCommand.Create(Test);
@@ -93,6 +99,7 @@ public class PerzNeuronetVM : WindowViewModel
     public string[] DataKeyItems { get => _dataKeyList; set => this.RaiseAndSetIfChanged(ref _dataKeyList, value); }
     public string SaveAsNetworkName { get => _saveAsNetworkName; set => this.RaiseAndSetIfChanged(ref _saveAsNetworkName, value); }
     public string TestResult { get => _testRes; set => this.RaiseAndSetIfChanged(ref _testRes, value); }
+    public bool IsZeroInitWeights { get => _isZeroInitWeights; set => this.RaiseAndSetIfChanged(ref _isZeroInitWeights, value); }
 
     private void ExecuteCurrent()
     {
@@ -137,6 +144,19 @@ public class PerzNeuronetVM : WindowViewModel
         new Trainer(ds, _nn, conv).TrainEpoch(src.Token);
     }
 
+    private void TrainCurrent()
+    {
+        if (_nn == null) return;
+        if (_selectedTrainDatasetItem == null) return;
+
+        var ds = _dsMan.GetDataset(_selectedTrainDatasetItem.Key);
+        if (ds == null) return;
+
+        var conv = new PerzConverter(ds.GetAllLabels());
+        CancellationTokenSource src = new CancellationTokenSource();
+        new Trainer(ds, _nn, conv).TrainCurrentSample(10000, src.Token);
+    }
+
     private void SaveAsNetwork()
     {
         if (string.IsNullOrEmpty(SaveAsNetworkName)) return;
@@ -170,6 +190,14 @@ public class PerzNeuronetVM : WindowViewModel
         }
         
         TestResult = sb.ToString();
+    }
+
+    private void InitWeights()
+    {
+        if (_nn == null) return;
+
+        _nn.InitWeights(_isZeroInitWeights ? InitWeightsMode.Zero : InitWeightsMode.Random);
+        _nnMan.OnTrain(_nn);
     }
 
     private void RefreshDatasetItems()

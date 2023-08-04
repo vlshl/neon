@@ -53,7 +53,7 @@ namespace Core
             {
                 PerzSettings s = (PerzSettings)settings;
                 var n = new PerzNetwork(s);
-                n.LoadWeights(null);
+                n.InitWeights(InitWeightsMode.Random);
 
                 var nns = new NeuronetSettings();
                 nns.Class = typeof(PerzNetwork).Name;
@@ -142,6 +142,8 @@ namespace Core
         private const string INPUT = "input";
         private const string OUTPUT = "output";
         private const string HIDDEN = "hidden";
+        private const string OUTPUT_WEIGHTS = "output_weights";
+        private const string HIDDEN_WEIGHTS = "hidden_weights";
 
         public string[] GetDataKeys(INetwork net)
         {
@@ -149,50 +151,60 @@ namespace Core
             var pn = net as PerzNetwork;
             if (pn != null)
             {
-                keys.Add(OUTPUT);
                 keys.Add(INPUT);
+                keys.Add(OUTPUT);
                 int hidCount = pn.GetHiddenLayersCount();
                 for (int i = 0; i < hidCount; ++i)
                 {
-                    keys.Add(HIDDEN + (i + 1).ToString());
+                    keys.Add(HIDDEN + ":" + (i + 1).ToString());
+                }
+                keys.Add(OUTPUT_WEIGHTS);
+                for (int i = 0; i < hidCount; ++i)
+                {
+                    keys.Add(HIDDEN_WEIGHTS + ":" + (i + 1).ToString());
                 }
             }
 
             return keys.ToArray();
         }
 
-        public double[] GetDataByKey(INetwork net, string key)
+        public double[,] GetDataByKey(INetwork net, string key)
         {
             var pn = net as PerzNetwork;
             if (pn != null)
             {
-                if (key == INPUT) return pn.GetOutputs(-1);
-                if (key == OUTPUT) return pn.GetOutputs(0);
-                if (key.StartsWith(HIDDEN))
+                if (key == INPUT) return GetArray2(pn.GetOutputs(-1));
+                if (key == OUTPUT) return GetArray2(pn.GetOutputs(0));
+                if (key.StartsWith(HIDDEN + ":"))
                 {
-                    string k = key.Remove(0, HIDDEN.Length);
+                    string k = key.Remove(0, HIDDEN.Length + 1);
                     int h;
                     if (int.TryParse(k, out h))
                     {
-                        return pn.GetOutputs(h);
+                        return GetArray2(pn.GetOutputs(h));
                     }
                 }
-
+                if (key == OUTPUT_WEIGHTS) return pn.GetWeights(0);
+                if (key.StartsWith(HIDDEN_WEIGHTS + ":"))
+                {
+                    string k = key.Remove(0, HIDDEN_WEIGHTS.Length + 1);
+                    int h;
+                    if (int.TryParse(k, out h))
+                    {
+                        return pn.GetWeights(h);
+                    }
+                }
             }
 
-            return new double[0];
+            return new double[0, 0];
         }
 
-
-
-
-
-
-
-
-
-
-
+        private double[,] GetArray2(double[] arr)
+        {
+            var arr2 = new double[1, arr.Length];
+            for (int i = 0; i < arr.Length; ++i) arr2[0, i] = arr[i];
+            return arr2;
+        }
     }
 
     public class NeuronetSettings

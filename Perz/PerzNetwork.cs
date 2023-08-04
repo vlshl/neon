@@ -89,32 +89,26 @@ namespace Perz
             return new double[0, 0];
         }
 
-        public void LoadWeights(IEnumerable<double[,]>? weights)
+        public void LoadWeights(IEnumerable<double[,]> weights)
         {
-            if (weights == null)
-            {
-                _outputLayer.InitWeights(null);
-                foreach (var h in _hiddenLayers) h.InitWeights(null);
-            }
-            else
-            {
-                if (!weights.Any()) return;
+            if (!weights.Any()) return;
 
-                _outputLayer.InitWeights(weights.First());
-                int w_count = weights.Count();
+            _outputLayer.LoadWeights(weights.First());
+            int w_count = weights.Count();
 
-                for (int i = 0; i < _hiddenLayers.Count; ++i)
+            for (int i = 0; i < _hiddenLayers.Count; ++i)
+            {
+                if (i + 1 < w_count)
                 {
-                    if (i + 1 < w_count)
-                    {
-                        _hiddenLayers[i].InitWeights(weights.ElementAt(i + 1));
-                    }
-                    else
-                    {
-                        _hiddenLayers[i].InitWeights(null);
-                    }
+                    _hiddenLayers[i].LoadWeights(weights.ElementAt(i + 1));
                 }
             }
+        }
+
+        public void InitWeights(InitWeightsMode mode)
+        {
+            _outputLayer.InitWeights(mode);
+            foreach (var h in _hiddenLayers) h.InitWeights(mode);
         }
 
         /// <summary>

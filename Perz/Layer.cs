@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using Common;
 
 namespace Perz
 {
@@ -60,22 +55,31 @@ namespace Perz
             }
         }
 
-        public void InitWeights(double[,]? ws)
+        public void LoadWeights(double[,] ws)
         {
-            if (ws == null)
+            weights = ws;
+        }
+
+        public void InitWeights(InitWeightsMode mode)
+        {
+            var r = new Random(DateTime.Now.Millisecond);
+            for (int i = 0; i < weights.GetLength(0); ++i)
             {
-                var r = new Random(DateTime.Now.Millisecond);
-                for (int i = 0; i < weights.GetLength(0); ++i)
+                for (int j = 0; j < weights.GetLength(1); ++j)
                 {
-                    for (int j = 0; j < weights.GetLength(1); ++j)
+                    if (mode == InitWeightsMode.Random)
                     {
                         weights[i, j] = r.NextDouble() * 2 - 1;
                     }
+                    else if (mode == InitWeightsMode.Zero)
+                    {
+                        weights[i, j] = 0;
+                    }
+                    else
+                    {
+                        weights[i, j] = 0;
+                    }
                 }
-            }
-            else
-            {
-                weights = ws;
             }
         }
     }

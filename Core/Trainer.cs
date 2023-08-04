@@ -7,7 +7,7 @@ namespace Core
     {
         private readonly IDataset _dataset;
         private readonly INetwork _network;
-        private readonly INetworkConverter _converter; 
+        private readonly INetworkConverter _converter;
 
         public Trainer(IDataset dataset, INetwork network, INetworkConverter converter)
         {
@@ -23,7 +23,7 @@ namespace Core
 
         public void TrainEpoch(int epochs, CancellationToken cancel)
         {
-            for (int ep = 0; ep < epochs; ++ep) 
+            for (int ep = 0; ep < epochs; ++ep)
             {
                 if (cancel.IsCancellationRequested) break;
 
@@ -43,6 +43,23 @@ namespace Core
 
                 NetworkManager.Instance.OnTrain(_network);
             }
+        }
+
+        public void TrainCurrentSample(int count, CancellationToken cancel)
+        {
+            var sample = _dataset.GetCurrentSample();
+            if (sample == null) return;
+
+            double[] targets = _converter.ConvertBack(sample.Label);
+            var inputs = sample.GetData();
+            
+            for (int i = 0; i < count; ++i)
+            {
+                if (cancel.IsCancellationRequested) break;
+                _network.Train(inputs, targets);
+            }
+
+            NetworkManager.Instance.OnTrain(_network);
         }
     }
 }
