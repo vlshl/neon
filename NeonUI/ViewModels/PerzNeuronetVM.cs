@@ -169,7 +169,9 @@ public class PerzNeuronetVM : WindowViewModel
         _trainCancelSrc = new CancellationTokenSource();
         var trainer = new Trainer(ds, _nn, conv);
         trainer.OnProgress = OnTrainProgress;
+        ds.SuspendEvents();
         bool isComplete = await trainer.TrainEpoch(_trainCancelSrc.Token);
+        ds.ResumeEvents();
         MessagePanel?.ShowMessage(isComplete ? "Процесс тренировки завершен" : "Процесс тренировки прерван");
     }
 
@@ -246,7 +248,9 @@ public class PerzNeuronetVM : WindowViewModel
         _testCancelSrc = new CancellationTokenSource();
         var tester = new Tester(ds, _nn, conv);
         tester.OnProgress = OnTesterProgress;
+        ds.SuspendEvents();
         var results = await tester.Test(_testCancelSrc.Token);
+        ds.ResumeEvents();
         if (results != null)
         {
             StringBuilder sb = new StringBuilder();

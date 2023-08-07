@@ -13,6 +13,9 @@ namespace Dataset
         private List<int> _filterIndexes;
         private int _currentIndex;
         private List<string> _allLabels;
+        private bool _isEvents;
+        private bool _isFilterChange;
+        private bool _isCurrentChange;
 
         public event DatasetChangeEH? OnFilterChange;
         public event DatasetChangeEH? OnCurrentChange;
@@ -29,6 +32,9 @@ namespace Dataset
             _filterIndexes = new List<int>();
             _currentIndex = -1;
             _allLabels = new List<string>();
+            _isEvents = true;
+            _isFilterChange = false;
+            _isCurrentChange = false;
 
             OnFilterChange = null;
             OnCurrentChange = null;
@@ -60,8 +66,17 @@ namespace Dataset
                 {
                     _currentIndex = -1;
                 }
-                OnFilterChange?.Invoke();
-                OnCurrentChange?.Invoke();
+
+                if (_isEvents)
+                {
+                    OnFilterChange?.Invoke(); 
+                    OnCurrentChange?.Invoke();
+                }
+                else
+                {
+                    _isFilterChange = true;
+                    _isCurrentChange = true;
+                }
             }
         }
 
@@ -82,8 +97,35 @@ namespace Dataset
             {
                 _currentIndex = -1;
             }
-            OnFilterChange?.Invoke();
-            OnCurrentChange?.Invoke();
+
+            if (_isEvents)
+            {
+                OnFilterChange?.Invoke();
+                OnCurrentChange?.Invoke();
+            }
+            else
+            {
+                _isFilterChange = true;
+                _isCurrentChange = true;
+            }
+        }
+
+        public void SuspendEvents()
+        {
+            _isEvents = false;
+            _isFilterChange = false;
+            _isCurrentChange = false;
+        }
+
+        public void ResumeEvents()
+        {
+            _isEvents = true;
+
+            if (_isFilterChange) OnFilterChange?.Invoke();
+            if (_isCurrentChange) OnCurrentChange?.Invoke();
+
+            _isFilterChange = false;
+            _isCurrentChange = false;
         }
 
         public string[] GetAllLabels()
@@ -156,7 +198,14 @@ namespace Dataset
                 if (_currentIndex < _labels.Length - 1)
                 {
                     _currentIndex++;
-                    OnCurrentChange?.Invoke();
+                    if (_isEvents)
+                    {
+                        OnCurrentChange?.Invoke();
+                    }
+                    else
+                    {
+                        _isCurrentChange = true;
+                    }
                     return true;
                 }
                 else
@@ -169,7 +218,14 @@ namespace Dataset
                 if (_currentIndex < _filterIndexes.Count - 1)
                 {
                     _currentIndex++;
-                    OnCurrentChange?.Invoke();
+                    if (_isEvents)
+                    {
+                        OnCurrentChange?.Invoke();
+                    }
+                    else
+                    {
+                        _isCurrentChange = true;
+                    }
                     return true;
                 }
                 else
@@ -184,7 +240,14 @@ namespace Dataset
             if (_currentIndex > 0)
             {
                 _currentIndex--;
-                OnCurrentChange?.Invoke();
+                if (_isEvents)
+                {
+                    OnCurrentChange?.Invoke();
+                }
+                else
+                {
+                    _isCurrentChange = true;
+                }
                 return true;
             }
             else
@@ -198,7 +261,14 @@ namespace Dataset
             if (_currentIndex >= 0)
             {
                 _currentIndex = 0;
-                OnCurrentChange?.Invoke();
+                if (_isEvents)
+                {
+                    OnCurrentChange?.Invoke();
+                }
+                else
+                {
+                    _isCurrentChange = true;
+                }
                 return true;
             }
             else
@@ -219,7 +289,14 @@ namespace Dataset
             {
                 _currentIndex = _filterIndexes.Count - 1;
             }
-            OnCurrentChange?.Invoke();
+            if (_isEvents)
+            {
+                OnCurrentChange?.Invoke();
+            }
+            else
+            {
+                _isCurrentChange = true;
+            }
 
             return true;
         }

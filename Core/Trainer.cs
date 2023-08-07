@@ -33,6 +33,7 @@ namespace Core
 
                 long totalCount = _dataset.GetCount() * epochs;
                 long count = 0;
+                _dataset.SuspendEvents();
 
                 for (int ep = 0; ep < epochs; ++ep)
                 {
@@ -63,6 +64,7 @@ namespace Core
                     }
                 }
 
+                _dataset.ResumeEvents();
                 OnProgress?.Invoke(count, totalCount);
                 NetworkManager.Instance.OnTrain(_network);
 

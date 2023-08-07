@@ -20,6 +20,8 @@
         string GetName();
         object GetSettings();
         void Load();
+        void SuspendEvents();
+        void ResumeEvents();
         event DatasetChangeEH OnFilterChange;
         event DatasetChangeEH OnCurrentChange;
     }

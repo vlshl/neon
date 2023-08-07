@@ -29,51 +29,53 @@ namespace Core
             return Task.Run(() =>
             {
                 Dictionary<string, TestResult> results = new Dictionary<string, TestResult>();
-
-                bool isFirst = _dataset.First();
-                if (!isFirst) return results;
-
+                _dataset.SuspendEvents();
                 long ts1 = DateTime.Now.Ticks + ONPROGRESS_STEP;
 
                 long totalCount = _dataset.GetCount();
                 long count = 0;
 
-                do
+                bool isFirst = _dataset.First();
+                if (isFirst)
                 {
-                    if (cancel.IsCancellationRequested) break;
-
-                    var sample = _dataset.GetCurrentSample();
-                    if (sample == null) continue;
-
-                    var inputs = sample.GetData();
-                    var label = sample.Label;
-                    var outputs = _network.Execute(inputs);
-                    var resLabel = _converter.Convert(outputs);
-
-                    if (!results.ContainsKey(label))
+                    do
                     {
-                        results.Add(label, new TestResult());
-                    }
-                    var r = results[label];
+                        if (cancel.IsCancellationRequested) break;
 
-                    if (label == resLabel)
-                    {
-                        r.Success++;
-                    }
-                    else
-                    {
-                        r.Error++;
-                    }
+                        var sample = _dataset.GetCurrentSample();
+                        if (sample == null) continue;
 
-                    count++;
-                    long ts = DateTime.Now.Ticks;
-                    if (ts > ts1)
-                    {
-                        ts1 = ts + ONPROGRESS_STEP;
-                        OnProgress?.Invoke(count, totalCount);
-                    }
-                } while (_dataset.Next());
+                        var inputs = sample.GetData();
+                        var label = sample.Label;
+                        var outputs = _network.Execute(inputs);
+                        var resLabel = _converter.Convert(outputs);
 
+                        if (!results.ContainsKey(label))
+                        {
+                            results.Add(label, new TestResult());
+                        }
+                        var r = results[label];
+
+                        if (label == resLabel)
+                        {
+                            r.Success++;
+                        }
+                        else
+                        {
+                            r.Error++;
+                        }
+
+                        count++;
+                        long ts = DateTime.Now.Ticks;
+                        if (ts > ts1)
+                        {
+                            ts1 = ts + ONPROGRESS_STEP;
+                            OnProgress?.Invoke(count, totalCount);
+                        }
+                    } while (_dataset.Next());
+                }
+
+                _dataset.ResumeEvents();
                 OnProgress?.Invoke(count, totalCount);
                 NetworkManager.Instance.OnExec(_network);
 
