@@ -94,9 +94,9 @@ namespace Core
             return null;
         }
 
-        public bool SaveNetwork(INetwork net, string name)
+        public void SaveAsNetwork(INetwork net, string filepath)
         {
-            if (net == null) return false;
+            if (net == null) return;
 
             var nns = new NeuronetSettings();
             nns.Class = typeof(PerzNetwork).Name;
@@ -104,16 +104,26 @@ namespace Core
             nns.Weights = net.GetAllWeights();
 
             string json = JsonConvert.SerializeObject(nns, Formatting.Indented);
-            string filepath = Path.Combine(GetNeuronetDirectory(), name + "." + GetNeuronetFileExt());
-            File.WriteAllText(filepath, json);
 
-            return true;
+            try
+            {
+                File.WriteAllText(filepath, json);
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Ошибка при сохранении файла", ex);
+            }
         }
 
-        public void CloseNetwork(string name)
+        public void CloseNetwork(INetwork n)
         {
-            if (!_nets.ContainsKey(name)) { return; }
-            _nets.Remove(name);
+            if (n == null) return;
+
+            var keys = _nets.Where(r => r.Value == n).Select(r => r.Key).ToList();
+            foreach (var key in keys)
+            {
+                _nets.Remove(key);
+            }
         }
 
         public INetwork? GetNetwork(string name)

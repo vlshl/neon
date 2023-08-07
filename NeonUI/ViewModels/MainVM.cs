@@ -129,14 +129,7 @@ public class MainVM : WindowViewModel
         if (string.IsNullOrEmpty(name)) return;
 
         OpenNeuronet(name);
-
-        // добавить в список
-        NeuronetItems.Clear();
-        string[] items = NetworkManager.Instance.GetNetworks();
-        foreach (string item in items)
-        {
-            NeuronetItems.Add(new MenuItem() { Header = item, Command = ReactiveCommand.Create(() => OpenNeuronet(item)) });
-        }
+        RefreshNnItems();
     }
 
     private void OpenNeuronet(string name)
@@ -148,4 +141,15 @@ public class MainVM : WindowViewModel
         win.Initialize(nn);
         win.Show(MainWindow.Instance);
     }
+
+    public void RefreshNnItems()
+    {
+        NeuronetItems.Clear();
+        string[] items = NetworkManager.Instance.GetNetworks();
+        foreach (string item in items)
+        {
+            NeuronetItems.Add(new MenuItem() { Header = item, Command = ReactiveCommand.Create(() => OpenNeuronet(item)) });
+        }
+    }
+
 }

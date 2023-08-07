@@ -1,7 +1,8 @@
-﻿using Common;
+﻿using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using Common;
 using Core;
 using DynamicData;
-using DynamicData.Binding;
 using NeonUI.Views;
 using Perz;
 using ReactiveUI;
@@ -11,35 +12,39 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
 
 public class PerzNeuronetVM : WindowViewModel
 {
+    public IMessagePanel? MessagePanel { get; set; }
     public ICommand ExecuteCurrentCommand { get; set; }
     public ICommand ViewDataCommand { get; set; }
     public ICommand TrainEpochCommand { get; set; }
-    public ICommand TrainCurrentCommand { get; set; }
+    public ICommand TrainCancelCommand { get; set; }
     public ICommand InitWeightsCommand { get; set; }
     public ICommand TestCommand { get; set; }
-    public ICommand SaveAsNetworkCommand { get; set; }
+    public ICommand TestCancelCommand { get; set; }
+    public ICommand SaveAsCommand { get; set; }
+    public ICommand CloseNetworkCommand { get; set; }
+    public ICommand CloseWindowCommand { get; set; }
     public ICommand RefreshDatasetItemsCommand { get; set; }
 
     private INetwork? _nn;
     private string _layerSizes;
     private ComboBoxItem? _selectedDatasetItem;
-    private ComboBoxItem? _selectedTrainDatasetItem;
-    private ComboBoxItem? _selectedTestDatasetItem;
     private string _selectedDataKey;
     private DatasetManager _dsMan;
     private NetworkManager _nnMan;
     private string[] _dataKeyList;
     private string _execCurRes;
     private string _testRes;
-    private string _saveAsNetworkName;
     private bool _isZeroInitWeights;
+    private decimal _trainPercent; // [0, 100]
+    private decimal _testPercent; // [0, 100]
+    private CancellationTokenSource? _trainCancelSrc;
+    private CancellationTokenSource? _testCancelSrc;
 
     public PerzNeuronetVM()
     {
@@ -48,27 +53,30 @@ public class PerzNeuronetVM : WindowViewModel
         _nnMan = NetworkManager.Instance;
         _layerSizes = "";
         _selectedDatasetItem = null;;
-        _selectedTrainDatasetItem = null;
-        _selectedTestDatasetItem = null;
         _selectedDataKey = "";
         _dataKeyList = new string[0];
         _execCurRes = "";
         _testRes = "";
         _isZeroInitWeights = true;
+        _trainPercent = 0;
+        _testPercent = 0;
+        _trainCancelSrc = null;
+        _testCancelSrc = null;
 
         DatasetItems = new ObservableCollection<ComboBoxItem>();
-        TrainDatasetItems = new ObservableCollection<ComboBoxItem>();
-        TestDatasetItems = new ObservableCollection<ComboBoxItem>();
         RefreshDatasetItems();
 
         ExecuteCurrentCommand = ReactiveCommand.Create(ExecuteCurrent);
         ViewDataCommand = ReactiveCommand.Create(ViewData);
         TrainEpochCommand = ReactiveCommand.Create(TrainEpoch);
-        TrainCurrentCommand = ReactiveCommand.Create(TrainCurrent);
+        TrainCancelCommand = ReactiveCommand.Create(TrainCancel);
         InitWeightsCommand = ReactiveCommand.Create(InitWeights);
-        SaveAsNetworkCommand = ReactiveCommand.Create(SaveAsNetwork);
+        SaveAsCommand = ReactiveCommand.Create(SaveAs);
+        CloseNetworkCommand = ReactiveCommand.Create(CloseNetwork);
+        CloseWindowCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
         RefreshDatasetItemsCommand = ReactiveCommand.Create(RefreshDatasetItems);
         TestCommand = ReactiveCommand.Create(Test);
+        TestCancelCommand = ReactiveCommand.Create(TestCancel);
     }
 
     public void Initialize(INetwork nn)
@@ -90,27 +98,36 @@ public class PerzNeuronetVM : WindowViewModel
     public string LayerSizes { get => _layerSizes; set => this.RaiseAndSetIfChanged(ref _layerSizes, value); }
     public ObservableCollection<ComboBoxItem> DatasetItems { get; private set; }
     public ComboBoxItem? SelectedDatasetItem { get => _selectedDatasetItem; set => this.RaiseAndSetIfChanged(ref _selectedDatasetItem, value); }
-    public ObservableCollection<ComboBoxItem> TrainDatasetItems { get; private set; }
-    public ComboBoxItem? SelectedTrainDatasetItem { get => _selectedTrainDatasetItem; set => this.RaiseAndSetIfChanged(ref _selectedTrainDatasetItem, value); }
-    public ObservableCollection<ComboBoxItem> TestDatasetItems { get; private set; }
-    public ComboBoxItem? SelectedTestDatasetItem { get => _selectedTestDatasetItem; set => this.RaiseAndSetIfChanged(ref _selectedTestDatasetItem, value); }
     public string ExecuteCurrentResult { get => _execCurRes; set => this.RaiseAndSetIfChanged(ref _execCurRes, value); }
     public string SelectedDataKey { get => _selectedDataKey; set => this.RaiseAndSetIfChanged(ref _selectedDataKey, value); }
     public string[] DataKeyItems { get => _dataKeyList; set => this.RaiseAndSetIfChanged(ref _dataKeyList, value); }
-    public string SaveAsNetworkName { get => _saveAsNetworkName; set => this.RaiseAndSetIfChanged(ref _saveAsNetworkName, value); }
     public string TestResult { get => _testRes; set => this.RaiseAndSetIfChanged(ref _testRes, value); }
     public bool IsZeroInitWeights { get => _isZeroInitWeights; set => this.RaiseAndSetIfChanged(ref _isZeroInitWeights, value); }
+    public decimal TrainPercent { get => _trainPercent; set => this.RaiseAndSetIfChanged(ref _trainPercent, value); }
+    public decimal TestPercent { get => _testPercent; set => this.RaiseAndSetIfChanged(ref _testPercent, value); }
 
     private void ExecuteCurrent()
     {
         if (_nn == null) return;
-        if (SelectedDatasetItem == null) return;
+        if (SelectedDatasetItem == null)
+        {
+            MessagePanel?.ShowMessage("Не выбран источник данных");
+            return;
+        }
 
         var ds = _dsMan.GetDataset(SelectedDatasetItem.Key);
-        if (ds == null) return;
+        if (ds == null)
+        {
+            MessagePanel?.ShowMessage("Источник данных закрыт, обновите список.");
+            return;
+        }
 
         var sample = ds.GetCurrentSample();
-        if (sample == null) return;
+        if (sample == null)
+        {
+            MessagePanel?.ShowMessage("Не найден текущий элемент в источник данных.");
+            return;
+        }
 
         var res = _nn.Execute(sample.GetData());
         _nnMan.OnExec(_nn);
@@ -124,6 +141,7 @@ public class PerzNeuronetVM : WindowViewModel
 
     private void ViewData()
     {
+        if (_nn == null) return;
         if (SelectedDataKey == "") return;
 
         ViewDataWindow win = new ViewDataWindow();
@@ -131,65 +149,142 @@ public class PerzNeuronetVM : WindowViewModel
         win.Show(MainWindow.Instance);
     }
 
-    private void TrainEpoch()
+    private async void TrainEpoch()
     {
         if (_nn == null) return;
-        if (_selectedTrainDatasetItem == null) return;
-
-        var ds = _dsMan.GetDataset(_selectedTrainDatasetItem.Key);
-        if (ds == null) return;
-
-        var conv = new PerzConverter(ds.GetAllLabels());
-        CancellationTokenSource src = new CancellationTokenSource();
-        new Trainer(ds, _nn, conv).TrainEpoch(src.Token);
-    }
-
-    private void TrainCurrent()
-    {
-        if (_nn == null) return;
-        if (_selectedTrainDatasetItem == null) return;
-
-        var ds = _dsMan.GetDataset(_selectedTrainDatasetItem.Key);
-        if (ds == null) return;
-
-        var conv = new PerzConverter(ds.GetAllLabels());
-        CancellationTokenSource src = new CancellationTokenSource();
-        new Trainer(ds, _nn, conv).TrainCurrentSample(10000, src.Token);
-    }
-
-    private void SaveAsNetwork()
-    {
-        if (string.IsNullOrEmpty(SaveAsNetworkName)) return;
-
-        _nnMan.SaveNetwork(_nn, SaveAsNetworkName);
-    }
-
-    private void Test()
-    {
-        if (_nn == null) return;
-        if (_selectedTestDatasetItem == null) return;
-
-        var ds = _dsMan.GetDataset(_selectedTestDatasetItem.Key);
-        if (ds == null) return;
-
-        var conv = new PerzConverter(ds.GetAllLabels());
-        CancellationTokenSource src = new CancellationTokenSource();
-        var results = new Tester(ds, _nn, conv).Test(src.Token);
-
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("Метка\tУспешно\tОшибок\tВсего");
-        foreach(var label in results.Keys)
+        if (SelectedDatasetItem == null)
         {
-            var r = results[label];
-            int total = r.Success + r.Error;
-            sb.Append(label + "\t");
-            sb.Append(string.Format("{0} ({1:F2} %)\t", r.Success, (decimal)r.Success / total * 100));
-            sb.Append(string.Format("{0} ({1:F2} %)\t", r.Error, (decimal)r.Error / total * 100));
-            sb.Append(total);
-            sb.AppendLine();
+            MessagePanel?.ShowMessage("Не выбран источник данных");
+            return;
         }
-        
-        TestResult = sb.ToString();
+
+        var ds = _dsMan.GetDataset(SelectedDatasetItem.Key);
+        if (ds == null)
+        {
+            MessagePanel?.ShowMessage("Источник данных закрыт, обновите список.");
+            return;
+        }
+
+        var conv = new PerzConverter(ds.GetAllLabels());
+        _trainCancelSrc = new CancellationTokenSource();
+        var trainer = new Trainer(ds, _nn, conv);
+        trainer.OnProgress = OnTrainProgress;
+        bool isComplete = await trainer.TrainEpoch(_trainCancelSrc.Token);
+        MessagePanel?.ShowMessage(isComplete ? "Процесс тренировки завершен" : "Процесс тренировки прерван");
+    }
+
+    private void OnTrainProgress(long count, long total)
+    {
+        decimal p = 0;
+        if (total > 0)
+        {
+            p = (decimal)count / total * 100;
+        }
+
+        Dispatcher.UIThread.Invoke(() => { TrainPercent = p; });
+    }
+
+    private void TrainCancel()
+    {
+        _trainCancelSrc?.Cancel();
+    }
+
+    private async void SaveAs()
+    {
+        if (_nn == null) return;
+
+        var sp = MainWindow.Instance.StorageProvider;
+        IStorageFolder? dir = await sp.TryGetFolderFromPathAsync(NetworkManager.Instance.GetNeuronetDirectory());
+        if (dir == null) return;
+
+        var file = await sp.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Сеть",
+            DefaultExtension = NetworkManager.Instance.GetNeuronetFileExt(),
+            ShowOverwritePrompt = true,
+            SuggestedStartLocation = dir
+        });
+        if (file == null) return;
+
+        try
+        {
+            _nnMan.SaveAsNetwork(_nn, file.Path.AbsolutePath);
+        }
+        catch(Exception ex)
+        {
+            MessagePanel?.ShowException(ex);
+        }
+    }
+
+    private void CloseNetwork()
+    {
+        if (_nn == null) return;
+        _nnMan.CloseNetwork(_nn);
+
+        var mainVm = MainWindow.Instance.DataContext as MainVM;
+        if (mainVm != null) mainVm.RefreshNnItems();
+        CloseWindow?.Invoke();
+    }
+
+    private async void Test()
+    {
+        if (_nn == null) return;
+        if (SelectedDatasetItem == null)
+        {
+            MessagePanel?.ShowMessage("Не выбран источник данных");
+            return;
+        }
+
+        var ds = _dsMan.GetDataset(SelectedDatasetItem.Key);
+        if (ds == null)
+        {
+            MessagePanel?.ShowMessage("Источник данных закрыт, обновите список.");
+            return;
+        }
+
+        var conv = new PerzConverter(ds.GetAllLabels());
+        _testCancelSrc = new CancellationTokenSource();
+        var tester = new Tester(ds, _nn, conv);
+        tester.OnProgress = OnTesterProgress;
+        var results = await tester.Test(_testCancelSrc.Token);
+        if (results != null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Метка\tУспешно\tОшибок\tВсего");
+            foreach (var label in results.Keys)
+            {
+                var r = results[label];
+                int total = r.Success + r.Error;
+                sb.Append(label + "\t");
+                sb.Append(string.Format("{0} ({1:F2} %)\t", r.Success, (decimal)r.Success / total * 100));
+                sb.Append(string.Format("{0} ({1:F2} %)\t", r.Error, (decimal)r.Error / total * 100));
+                sb.Append(total);
+                sb.AppendLine();
+            }
+
+            TestResult = sb.ToString();
+            MessagePanel?.ShowMessage("Тестирование завершено");
+        }
+        else
+        {
+            MessagePanel?.ShowMessage("Тестирование прервано");
+        }
+    }
+
+    private void OnTesterProgress(long count, long total)
+    {
+        decimal p = 0;
+        if (total > 0)
+        {
+            p = (decimal)count / total * 100;
+        }
+
+        Dispatcher.UIThread.Invoke(() => { TestPercent = p; });
+    }
+
+    private void TestCancel()
+    {
+        _testCancelSrc?.Cancel();
     }
 
     private void InitWeights()
@@ -205,11 +300,11 @@ public class PerzNeuronetVM : WindowViewModel
         var list = _dsMan.GetDatasetPaths().Select(p => new ComboBoxItem(p, _dsMan.GetDatasetName(p)));
         DatasetItems.Clear();
         DatasetItems.AddRange(list);
+    }
 
-        TrainDatasetItems.Clear();
-        TrainDatasetItems.AddRange(list);
-
-        TestDatasetItems.Clear();
-        TestDatasetItems.AddRange(list);
+    public void Close()
+    {
+        _trainCancelSrc?.Cancel();
+        _testCancelSrc?.Cancel();
     }
 }

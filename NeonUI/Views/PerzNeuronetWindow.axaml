@@ -3,86 +3,91 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:NeonUI.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:v="using:NeonUI.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
         x:Class="NeonUI.Views.PerzNeuronetWindow"
-		Width="800" Height="450" WindowStartupLocation="CenterOwner"
+		Width="800" Height="500" 
+		CanResize="False" WindowStartupLocation="CenterOwner"
         Title="Перцептрон">
+	
 	<Design.DataContext>
 		<vm:PerzNeuronetVM />
 	</Design.DataContext>
 
-	<TabControl>
-		<TabItem Header="Сеть">
-			<Grid ColumnDefinitions="*,*,*" RowDefinitions="50, 50, 50, 50">
-				<Label Grid.Row="0" Grid.Column="0" Content="Слои:"></Label>
-				<Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding LayerSizes}"></Label>
+	<DockPanel>
+		<Panel DockPanel.Dock="Top">
+			<v:MessageUC Name="message"></v:MessageUC>
+		</Panel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
+			<Label Content="Источник данных:"></Label>
+			<ComboBox ItemsSource="{Binding DatasetItems}" SelectedItem="{Binding SelectedDatasetItem}" Width="200" Margin="5,0,0,0" />
+			<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
+				<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
+			</Button>
+		</StackPanel>
 
-				<Label Grid.Row="1" Grid.Column="0" Content="Набор данных:"></Label>
-				<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-					<ComboBox ItemsSource="{Binding DatasetItems}" SelectedItem="{Binding SelectedDatasetItem}" Width="200" />
-					<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
-						<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
-					</Button>
-				</StackPanel>
+		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*,*" Margin="5">
+			<Grid.Styles>
+				<Style Selector="Button">
+					<Setter Property="HorizontalAlignment" Value="Center" />
+				</Style>
+			</Grid.Styles>
+			<Button Grid.Column="0" Command="{Binding SaveAsCommand}">Сохранить как</Button>
+			<Button Grid.Column="1" Command="{Binding CloseNetworkCommand}">Выгрузить сеть</Button>
+			<Button Grid.Column="2" Command="{Binding CloseWindowCommand}">Закрыть окно</Button>
+		</Grid>
 
-				<Button Grid.Row="1" Grid.Column="2" Command="{Binding ExecuteCurrentCommand}">Распознать текущий элемент</Button>
+		<TabControl Margin="5">
+			<TabItem Header="Сеть">
+				<Grid ColumnDefinitions="*,*,*" RowDefinitions="50, 50, 50, 50">
+					<Label Grid.Row="0" Grid.Column="0" Content="Слои:"></Label>
+					<Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding LayerSizes}"></Label>
 
-				<Label Grid.Row="2" Grid.Column="0" Content="Результат:"></Label>
-				<Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ExecuteCurrentResult}"></Label>
+					<Button Grid.Row="1" Grid.Column="0" Command="{Binding ExecuteCurrentCommand}">Распознать текущий элемент</Button>
 
-				<Label Grid.Row="3" Grid.Column="0" Content="Внутренние данные:"></Label>
-				<StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-					<ComboBox ItemsSource="{Binding DataKeyItems}" SelectedItem="{Binding SelectedDataKey}" />
-					<Button Command="{Binding ViewDataCommand}" Margin="5,0,0,0">Показать</Button>
-				</StackPanel>
-			</Grid>
-		</TabItem>
+					<Label Grid.Row="2" Grid.Column="0" Content="Результат:"></Label>
+					<Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ExecuteCurrentResult}"></Label>
 
-		<TabItem Header="Тренировка">
-			<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50, 50, 50">
-				<Label Grid.Row="0" Grid.Column="0" Content="Набор данных:"></Label>
-				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-					<ComboBox ItemsSource="{Binding TrainDatasetItems}" SelectedItem="{Binding SelectedTrainDatasetItem}" Width="200"></ComboBox>
-					<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
-						<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
-					</Button>
-				</StackPanel>
+					<Label Grid.Row="3" Grid.Column="0" Content="Внутренние данные:"></Label>
+					<StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+						<ComboBox ItemsSource="{Binding DataKeyItems}" SelectedItem="{Binding SelectedDataKey}" Width="200" />
+						<Button Command="{Binding ViewDataCommand}" Margin="5,0,0,0">Показать</Button>
+					</StackPanel>
+				</Grid>
+			</TabItem>
 
-				<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
-					<Button  Command="{Binding TrainEpochCommand}">Старт эпохи</Button>
-					<Button  Command="{Binding TrainCurrentCommand}" Margin="5,0,0,0">Текущий элемент</Button>
-				</StackPanel>
+			<TabItem Header="Тренировка">
+				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50">
+					<Label Grid.Row="0" Grid.Column="0" Content="Инициализация весов:" />
+					<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+						<RadioButton IsChecked="{Binding IsZeroInitWeights}">Нулями</RadioButton>
+						<RadioButton IsChecked="{Binding !IsZeroInitWeights}" Margin="5,0,0,0">Случайно (-1, 1)</RadioButton>
+						<Button  Command="{Binding InitWeightsCommand}" Margin="5,0,0,0">Инициализировать</Button>
+					</StackPanel>
 
-				<Label Grid.Row="2" Grid.Column="0" Content="Инициализация весов:" />
-				<StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
-					<RadioButton IsChecked="{Binding IsZeroInitWeights}">Нулями</RadioButton>
-					<RadioButton IsChecked="{Binding !IsZeroInitWeights}" Margin="5,0,0,0">Случайно (-1, 1)</RadioButton>
-					<Button  Command="{Binding InitWeightsCommand}" Margin="5,0,0,0">Инициализировать</Button>
-				</StackPanel>
+					<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+						<Button  Command="{Binding TrainEpochCommand}" Width="120">Старт эпохи</Button>
+						<Button  Command="{Binding TrainCancelCommand}" Width="120" Margin="5,0,0,0">Стоп</Button>
+						<ProgressBar Value="{Binding TrainPercent}" ShowProgressText="True" Maximum="100" Minimum="0" Width="100" Height="32" Margin="5,0,0,0" />
+					</StackPanel>
+				</Grid>
+			</TabItem>
 
-				<StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
-					<TextBox Text="{Binding SaveAsNetworkName}"></TextBox>
-					<Button Command="{Binding SaveAsNetworkCommand}">Сохранить как</Button>
-				</StackPanel>
-			</Grid>
-		</TabItem>
+			<TabItem Header="Тестирование">
+				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, Auto">
+					<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+						<Button  Command="{Binding TestCommand}" Width="120">Старт теста</Button>
+						<Button  Command="{Binding TestCancelCommand}" Width="120" Margin="5,0,0,0">Стоп</Button>
+						<ProgressBar Value="{Binding TestPercent}" ShowProgressText="True" Maximum="100" Minimum="0" Width="100" Height="32" Margin="5,0,0,0" />
+					</StackPanel>
 
-		<TabItem Header="Тестирование">
-			<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50, Auto">
-				<Label Grid.Row="0" Grid.Column="0" Content="Набор данных:"></Label>
-				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-					<ComboBox ItemsSource="{Binding TestDatasetItems}" SelectedItem="{Binding SelectedTestDatasetItem}" Width="200"></ComboBox>
-					<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
-						<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
-					</Button>
-				</StackPanel>
+					<Label Grid.Row="1" Grid.Column="0" Content="Результаты теста:"></Label>
+					<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding TestResult}" Width="500" Height="250"
+							 IsReadOnly="True" HorizontalAlignment="Left" TextWrapping="Wrap" FontFamily="Courier New"></TextBox>
+				</Grid>
+			</TabItem>
+		</TabControl>
 
-				<Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding TestCommand}">Старт теста</Button>
+	</DockPanel>
 
-				<Label Grid.Row="2" Grid.Column="0" Content="Результаты теста:"></Label>
-				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TestResult}" Width="500" Height="250"
-						 IsReadOnly="True" HorizontalAlignment="Left" TextWrapping="Wrap" FontFamily="Courier New"></TextBox>
-			</Grid>
-		</TabItem>
-	</TabControl>
 </Window>
