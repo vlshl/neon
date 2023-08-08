@@ -15,7 +15,7 @@ namespace NeonUI.Views
             DataContext = _vm;
         }
 
-        public void Initialize(INetwork net, string dataKey)
+        public void Initialize(INeuronet net, string dataKey)
         {
             _vm.Initialize(net, dataKey);
         }

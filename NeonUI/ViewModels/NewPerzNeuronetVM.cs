@@ -8,6 +8,7 @@ namespace NeonUI.ViewModels;
 public class NewPerzNeuronetVM : DialogViewModel
 {
     public string Name { get; set; }
+    public string FileName { get; set; }
     public int InputLayerSize { get; set; }
     public int OutputLayerSize { get; set; }
     public string HiddenLayers { get; set; }
@@ -17,6 +18,7 @@ public class NewPerzNeuronetVM : DialogViewModel
     public NewPerzNeuronetVM()
     {
         Name = string.Empty;
+        FileName = string.Empty;
         InputLayerSize = 1;
         OutputLayerSize = 1;
         HiddenLayers = string.Empty;
@@ -28,6 +30,12 @@ public class NewPerzNeuronetVM : DialogViewModel
         if (string.IsNullOrEmpty(Name))
         {
             MessagePanel?.ShowMessage("Не введено наименование");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(FileName))
+        {
+            MessagePanel?.ShowMessage("Не введено имя файла");
             return;
         }
 
@@ -64,6 +72,7 @@ public class NewPerzNeuronetVM : DialogViewModel
         }
 
         PerzSettings settings = new PerzSettings();
+        settings.Name = Name;
         settings.InputSize = InputLayerSize;
         settings.OutputSize = OutputLayerSize;
         foreach (var n in _hiddenLayerSizes)
@@ -71,7 +80,7 @@ public class NewPerzNeuronetVM : DialogViewModel
             settings.HiddenLayerSizes.Add(n);
         }
 
-        bool isSuccess = NetworkManager.Instance.CreateNetwork(Name.Trim(), settings);
+        bool isSuccess = NeuronetManager.Instance.CreateNeuronet(FileName.Trim(), settings);
 
         if (isSuccess)
         {

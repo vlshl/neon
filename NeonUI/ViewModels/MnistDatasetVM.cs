@@ -11,17 +11,6 @@ namespace NeonUI.ViewModels;
 
 public class MnistDatasetVM : WindowViewModel
 {
-    private IDataset? _ds;
-    private int _dsCount;
-    private int _dsIndex;
-    private string _info;
-    private string _filter;
-    private string _label;
-    private string _title;
-    private int _imageWidth;
-    private int _imageHeight;
-    private WriteableBitmap? _imageSource;
-
     public ICommand NextCommand { get; set; }
     public ICommand PrevCommand { get; set; }
     public ICommand FirstCommand { get; set; }
@@ -38,6 +27,17 @@ public class MnistDatasetVM : WindowViewModel
     public int ImageWidth { get => _imageWidth; set => this.RaiseAndSetIfChanged(ref _imageWidth, value); }
     public int ImageHeight { get => _imageHeight; set => this.RaiseAndSetIfChanged(ref _imageHeight, value); }
     public WriteableBitmap? ImageSource { get => _imageSource; set => this.RaiseAndSetIfChanged(ref _imageSource, value); }
+
+    private IDataset? _ds;
+    private int _dsCount;
+    private int _dsIndex;
+    private string _info;
+    private string _filter;
+    private string _label;
+    private string _title;
+    private int _imageWidth;
+    private int _imageHeight;
+    private WriteableBitmap? _imageSource;
 
     public MnistDatasetVM()
     {

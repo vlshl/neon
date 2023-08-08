@@ -2,11 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="320"
 		xmlns:vm="using:NeonUI.ViewModels"
         xmlns:v="using:NeonUI.Views"
         x:Class="NeonUI.Views.NewPerzNeuronetDialog"
-		Width="600" Height="300" CanResize="False" WindowStartupLocation="CenterOwner"
+		Width="600" Height="320" MinWidth="600" MinHeight="320"
+		CanResize="True" WindowStartupLocation="CenterOwner"
         Title="Новая сеть Перцептрон">
 	<Design.DataContext>
 		<vm:NewPerzNeuronetVM />
@@ -16,24 +17,44 @@
 		<v:MessageUC Name="message" DockPanel.Dock="Top" />
 
 		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
-			<Button Command="{Binding OkCommand}" Width="100">OK</Button>
-			<Button Command="{Binding CancelCommand}" Width="100">Отмена</Button>
+			<Button Command="{Binding OkCommand}" Width="100" Margin="5">OK</Button>
+			<Button Command="{Binding CancelCommand}" Width="100" Margin="5">Отмена</Button>
 		</StackPanel>
 
-		<Grid RowDefinitions="Auto, Auto, Auto, Auto, *" ColumnDefinitions="1*,2*" Margin="5">
+		<Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, *" ColumnDefinitions="1*,2*" Margin="5">
+			<Grid.Styles>
+				<Style Selector="TextBox">
+					<Setter Property="Margin" Value="0,3,0,0" />
+				</Style>
+				<Style Selector="NumericUpDown">
+					<Setter Property="Margin" Value="0,3,0,0" />
+					<Setter Property="Width" Value="200" />
+					<Setter Property="HorizontalAlignment" Value="Left" />
+				</Style>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="3,3,0,0" />
+				</Style>
+				<Style Selector="TextBlock">
+					<Setter Property="Margin" Value="0,3,0,0" />
+				</Style>
+			</Grid.Styles>
+
 			<Label Grid.Row="0" Grid.Column="0" Content="Наименование:"/>
 			<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBox>
 
-			<Label Grid.Row="1" Grid.Column="0" Content="Размер входного слоя:"/>
-			<NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding InputLayerSize}" Minimum="1"></NumericUpDown>
+			<Label Grid.Row="1" Grid.Column="0" Content="Имя файла:"/>
+			<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileName}"></TextBox>
 
-			<Label Grid.Row="2" Grid.Column="0" Content="Размер выходного слоя:"/>
-			<NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding OutputLayerSize}" Minimum="1"></NumericUpDown>
+			<Label Grid.Row="2" Grid.Column="0" Content="Размер входного слоя:"/>
+			<NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding InputLayerSize}" Minimum="1"></NumericUpDown>
 
-			<Label Grid.Row="3" Grid.Column="0" Content="Размеры скрытых слоев:"/>
-			<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding HiddenLayers}"></TextBox>
+			<Label Grid.Row="3" Grid.Column="0" Content="Размер выходного слоя:"/>
+			<NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding OutputLayerSize}" Minimum="1"></NumericUpDown>
 
-			<TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" FontSize="12"
+			<Label Grid.Row="4" Grid.Column="0" Content="Размеры скрытых слоев:"/>
+			<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding HiddenLayers}"></TextBox>
+
+			<TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="Wrap" FontSize="12"
 					   Text="Данные по скрытым слоям вводятся через запятую. Порядок - от входного слоя к выходному. Если скрытых слоев нет, поле пустое." />
 		</Grid>
 	</DockPanel>

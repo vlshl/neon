@@ -1,20 +1,15 @@
 ﻿using Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perz
 {
-    public class PerzNetwork : INetwork
+    public class PerzNeuronet : INeuronet
     {
         private InputLayer _inputLayer;
         private List<HiddenLayer> _hiddenLayers;
         private OutputLayer _outputLayer;
         private readonly PerzSettings _settings;
 
-        public PerzNetwork(PerzSettings settings)
+        public PerzNeuronet(PerzSettings settings)
         {
             _settings = settings;
             _hiddenLayers = new List<HiddenLayer>();
@@ -45,6 +40,11 @@ namespace Perz
         }
 
         public double[] Outputs { get { return _outputLayer.Outputs; } }
+
+        public string GetName()
+        {
+            return _settings.Name;
+        }
 
         public object GetSettings()
         {

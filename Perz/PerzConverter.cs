@@ -2,7 +2,7 @@
 
 namespace Perz
 {
-    public class PerzConverter : INetworkConverter
+    public class PerzConverter : INeuronetConverter
     {
         private string[] _labels;
         private int _size;

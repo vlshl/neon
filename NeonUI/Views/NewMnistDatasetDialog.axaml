@@ -4,11 +4,11 @@
         xmlns:v="using:NeonUI.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="280"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
         x:Class="NeonUI.Views.NewMnistDatasetDialog"
-		Width="600" Height="280"
+		MinWidth="600" MinHeight="300" Width="600" Height="300"
 		WindowStartupLocation="CenterOwner"
-        Title="Новый набор данных">
+        Title="Новый источник данных">
 
 	<Design.DataContext>
 		<vm:NewMnistDatasetVM />
@@ -22,21 +22,33 @@
 			<Button Command="{Binding CancelCommand}" Width="100" Margin="5">Отмена</Button>
 		</StackPanel>
 
-		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="1*,2*" Margin="5">
-			<Label Grid.Row="0" Grid.Column="0" Content="Наименование набора:"/>
+		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="200,*,Auto" Margin="5">
+			<Grid.Styles>
+				<Style Selector="TextBox">
+					<Setter Property="Margin" Value="0,3,0,0" />
+				</Style>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="3,3,0,0" />
+				</Style>
+			</Grid.Styles>
+
+			<Label Grid.Row="0" Grid.Column="0" Content="Наименование:"/>
 			<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBox>
 
-			<Label Grid.Row="1" Grid.Column="0" Content="Имя файла набора:"/>
-			<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Filename}"></TextBox>
+			<Label Grid.Row="1" Grid.Column="0" Content="Имя файла:"/>
+			<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileName}"></TextBox>
 
 			<Label Grid.Row="2" Grid.Column="0" Content="Каталог образцов/меток:"/>
 			<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding FolderPath}"></TextBox>
+			<Button Grid.Row="2" Grid.Column="2" Command="{Binding SelectFolderCommand}">...</Button>
 
 			<Label Grid.Row="3" Grid.Column="0" Content="Файл образцов:"/>
 			<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ImagesFilename}"></TextBox>
+			<Button Grid.Row="3" Grid.Column="2" Command="{Binding SelectImagesFileCommand}">...</Button>
 
 			<Label Grid.Row="4" Grid.Column="0" Content="Файл меток:"/>
 			<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding LabelsFilename}"></TextBox>
+			<Button Grid.Row="4" Grid.Column="2" Command="{Binding SelectLabelsFileCommand}">...</Button>
 		</Grid>
 	</DockPanel>
 </Window>

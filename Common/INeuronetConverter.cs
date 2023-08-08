@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public interface INetworkConverter
+    public interface INeuronetConverter
     {
         string Convert(double[] arr);
         double[] ConvertBack(string label);

@@ -3,32 +3,31 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Perz;
 using System.Data;
-using System.Net.NetworkInformation;
 
 namespace Core
 {
-    public delegate void NeunonetChangeEH(INetwork net, string e);
+    public delegate void NeunonetChangeEH(INeuronet net, string e);
 
-    public class NetworkManager
+    public class NeuronetManager
     {
-        private static NetworkManager? _instance = null;
-        private Dictionary<string, INetwork> _nets;
+        private static NeuronetManager? _instance = null;
+        private Dictionary<string, INeuronet> _nets;
         private string _nnPath;
 
-        public event NeunonetChangeEH OnNeuronetChange;
+        public event NeunonetChangeEH? OnNeuronetChange;
 
-        public static NetworkManager Instance
+        public static NeuronetManager Instance
         {
             get
             {
-                if (_instance == null) _instance = new NetworkManager();
+                if (_instance == null) _instance = new NeuronetManager();
                 return _instance;
             }
         }
 
-        public NetworkManager()
+        public NeuronetManager()
         {
-            _nets = new Dictionary<string, INetwork>();
+            _nets = new Dictionary<string, INeuronet>();
             _nnPath = string.Empty;
         }
 
@@ -37,31 +36,31 @@ namespace Core
             _nnPath = path;
         }
 
-        public void OnTrain(INetwork net)
+        public void OnTrain(INeuronet net)
         {
             OnNeuronetChange?.Invoke(net, "train");
         }
 
-        public void OnExec(INetwork net)
+        public void OnExec(INeuronet net)
         {
             OnNeuronetChange?.Invoke(net, "exec");
         }
 
-        public bool CreateNetwork(string name, object settings)
+        public bool CreateNeuronet(string filename, object settings)
         {
             if (settings is PerzSettings)
             {
                 PerzSettings s = (PerzSettings)settings;
-                var n = new PerzNetwork(s);
+                var n = new PerzNeuronet(s);
                 n.InitWeights(InitWeightsMode.Random);
 
                 var nns = new NeuronetSettings();
-                nns.Class = typeof(PerzNetwork).Name;
+                nns.Class = typeof(PerzNeuronet).Name;
                 nns.Settings = s;
                 nns.Weights = n.GetAllWeights();
 
                 string json = JsonConvert.SerializeObject(nns, Formatting.Indented);
-                string filepath = Path.Combine(GetNeuronetDirectory(), name + "." + GetNeuronetFileExt());
+                string filepath = Path.Combine(GetNeuronetDirectory(), filename + "." + GetNeuronetFileExt());
                 File.WriteAllText(filepath, json);
 
                 return true;
@@ -70,36 +69,43 @@ namespace Core
             return false;
         }
 
-        public string? OpenNetwork(string path)
+        public bool OpenNeuronet(string path)
         {
-            string name = Path.GetFileNameWithoutExtension(path);
-            if (_nets.ContainsKey(name)) return null;
+            string fullpath = Path.GetFullPath(path);
+            if (_nets.ContainsKey(fullpath)) return false;
 
-            string json = File.ReadAllText(path);
-            var nns = JsonConvert.DeserializeObject<NeuronetSettings>(json);
-            if (nns == null) return null;
-
-            if (nns.Class == typeof(PerzNetwork).Name)
+            try
             {
-                var settings = (nns.Settings as JObject).ToObject<PerzSettings>();
-                if (settings == null) return null;
+                string json = File.ReadAllText(fullpath);
+                var nns = JsonConvert.DeserializeObject<NeuronetSettings>(json);
+                if (nns == null) return false;
 
-                PerzNetwork n = new PerzNetwork(settings);
-                n.LoadWeights(nns.Weights);
-                _nets[name] = n;
+                if (nns.Class == typeof(PerzNeuronet).Name)
+                {
+                    var settings = (nns.Settings as JObject).ToObject<PerzSettings>();
+                    if (settings == null) return false;
 
-                return name;
+                    PerzNeuronet n = new PerzNeuronet(settings);
+                    n.LoadWeights(nns.Weights);
+                    _nets[fullpath] = n;
+
+                    return true;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Ошибка при открытии нейросети", ex);
             }
 
-            return null;
+            return false;
         }
 
-        public void SaveAsNetwork(INetwork net, string filepath)
+        public void SaveAsNeuronet(INeuronet net, string filepath)
         {
             if (net == null) return;
 
             var nns = new NeuronetSettings();
-            nns.Class = typeof(PerzNetwork).Name;
+            nns.Class = typeof(PerzNeuronet).Name;
             nns.Settings = net.GetSettings();
             nns.Weights = net.GetAllWeights();
 
@@ -115,7 +121,7 @@ namespace Core
             }
         }
 
-        public void CloseNetwork(INetwork n)
+        public void CloseNeuronet(INeuronet n)
         {
             if (n == null) return;
 
@@ -126,10 +132,11 @@ namespace Core
             }
         }
 
-        public INetwork? GetNetwork(string name)
+        public INeuronet? GetNeuronet(string path)
         {
-            if (!_nets.ContainsKey(name)) { return null; }
-            return _nets[name];
+            string fullpath = Path.GetFullPath(path);
+            if (!_nets.ContainsKey(fullpath)) { return null; }
+            return _nets[fullpath];
         }
 
         public string GetNeuronetDirectory()
@@ -142,12 +149,17 @@ namespace Core
             return "nn";
         }
 
-        public string[] GetNetworks()
+        public string[] GetNeuronetPaths()
         {
             return _nets.Keys.ToArray();
         }
 
-
+        public string GetNeuronetName(string path)
+        {
+            string fullpath = Path.GetFullPath(path);
+            if (!_nets.ContainsKey(fullpath)) { return ""; }
+            return _nets[fullpath].GetName();
+        }
 
         private const string INPUT = "input";
         private const string OUTPUT = "output";
@@ -155,10 +167,10 @@ namespace Core
         private const string OUTPUT_WEIGHTS = "output_weights";
         private const string HIDDEN_WEIGHTS = "hidden_weights";
 
-        public string[] GetDataKeys(INetwork net)
+        public string[] GetDataKeys(INeuronet net)
         {
             List<string> keys = new List<string>();
-            var pn = net as PerzNetwork;
+            var pn = net as PerzNeuronet;
             if (pn != null)
             {
                 keys.Add(INPUT);
@@ -178,9 +190,9 @@ namespace Core
             return keys.ToArray();
         }
 
-        public double[,] GetDataByKey(INetwork net, string key)
+        public double[,] GetDataByKey(INeuronet net, string key)
         {
-            var pn = net as PerzNetwork;
+            var pn = net as PerzNeuronet;
             if (pn != null)
             {
                 if (key == INPUT) return GetArray2(pn.GetOutputs(-1));

@@ -63,6 +63,6 @@ public partial class App : Application
         {
             Directory.CreateDirectory(netDir);
         }
-        NetworkManager.Instance.Initialize(Path.GetFullPath(netDir));
+        NeuronetManager.Instance.Initialize(Path.GetFullPath(netDir));
     }
 }

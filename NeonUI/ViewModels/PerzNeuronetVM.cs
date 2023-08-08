@@ -31,12 +31,14 @@ public class PerzNeuronetVM : WindowViewModel
     public ICommand CloseWindowCommand { get; set; }
     public ICommand RefreshDatasetItemsCommand { get; set; }
 
-    private INetwork? _nn;
+    public string Title { get => _title; set => this.RaiseAndSetIfChanged(ref _title, value); }
+
+    private INeuronet? _nn;
     private string _layerSizes;
     private ComboBoxItem? _selectedDatasetItem;
     private string _selectedDataKey;
     private DatasetManager _dsMan;
-    private NetworkManager _nnMan;
+    private NeuronetManager _nnMan;
     private string[] _dataKeyList;
     private string _execCurRes;
     private string _testRes;
@@ -45,12 +47,13 @@ public class PerzNeuronetVM : WindowViewModel
     private decimal _testPercent; // [0, 100]
     private CancellationTokenSource? _trainCancelSrc;
     private CancellationTokenSource? _testCancelSrc;
+    private string _title;
 
     public PerzNeuronetVM()
     {
         _nn = null;
         _dsMan = DatasetManager.Instance;
-        _nnMan = NetworkManager.Instance;
+        _nnMan = NeuronetManager.Instance;
         _layerSizes = "";
         _selectedDatasetItem = null;;
         _selectedDataKey = "";
@@ -62,6 +65,7 @@ public class PerzNeuronetVM : WindowViewModel
         _testPercent = 0;
         _trainCancelSrc = null;
         _testCancelSrc = null;
+        _title = "";
 
         DatasetItems = new ObservableCollection<ComboBoxItem>();
         RefreshDatasetItems();
@@ -79,9 +83,10 @@ public class PerzNeuronetVM : WindowViewModel
         TestCancelCommand = ReactiveCommand.Create(TestCancel);
     }
 
-    public void Initialize(INetwork nn)
+    public void Initialize(INeuronet nn)
     {
         _nn = nn;
+        Title = nn.GetName();
 
         var settings = nn.GetSettings() as PerzSettings;
         if (settings == null) return;
@@ -196,13 +201,13 @@ public class PerzNeuronetVM : WindowViewModel
         if (_nn == null) return;
 
         var sp = MainWindow.Instance.StorageProvider;
-        IStorageFolder? dir = await sp.TryGetFolderFromPathAsync(NetworkManager.Instance.GetNeuronetDirectory());
+        IStorageFolder? dir = await sp.TryGetFolderFromPathAsync(NeuronetManager.Instance.GetNeuronetDirectory());
         if (dir == null) return;
 
         var file = await sp.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Сеть",
-            DefaultExtension = NetworkManager.Instance.GetNeuronetFileExt(),
+            DefaultExtension = NeuronetManager.Instance.GetNeuronetFileExt(),
             ShowOverwritePrompt = true,
             SuggestedStartLocation = dir
         });
@@ -210,7 +215,7 @@ public class PerzNeuronetVM : WindowViewModel
 
         try
         {
-            _nnMan.SaveAsNetwork(_nn, file.Path.AbsolutePath);
+            _nnMan.SaveAsNeuronet(_nn, file.Path.AbsolutePath);
         }
         catch(Exception ex)
         {
@@ -221,7 +226,7 @@ public class PerzNeuronetVM : WindowViewModel
     private void CloseNetwork()
     {
         if (_nn == null) return;
-        _nnMan.CloseNetwork(_nn);
+        _nnMan.CloseNeuronet(_nn);
 
         var mainVm = MainWindow.Instance.DataContext as MainVM;
         if (mainVm != null) mainVm.RefreshNnItems();

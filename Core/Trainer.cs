@@ -8,11 +8,11 @@ namespace Core
         public Action<long, long>? OnProgress;
 
         private readonly IDataset _dataset;
-        private readonly INetwork _network;
-        private readonly INetworkConverter _converter;
+        private readonly INeuronet _network;
+        private readonly INeuronetConverter _converter;
         private const long ONPROGRESS_STEP = TimeSpan.TicksPerSecond;
 
-        public Trainer(IDataset dataset, INetwork network, INetworkConverter converter)
+        public Trainer(IDataset dataset, INeuronet network, INeuronetConverter converter)
         {
             _dataset = dataset;
             _network = network;
@@ -66,7 +66,7 @@ namespace Core
 
                 _dataset.ResumeEvents();
                 OnProgress?.Invoke(count, totalCount);
-                NetworkManager.Instance.OnTrain(_network);
+                NeuronetManager.Instance.OnTrain(_network);
 
                 return !cancel.IsCancellationRequested;
             });

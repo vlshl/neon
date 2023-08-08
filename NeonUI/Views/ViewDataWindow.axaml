@@ -3,17 +3,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="100"
-		SizeToContent="WidthAndHeight"
         x:Class="NeonUI.Views.ViewDataWindow"
         xmlns:vm="using:NeonUI.ViewModels"
         Title="{Binding Title}"
-		Width="{Binding Width}" Height="{Binding Height}">
+		Width="{Binding WindowWidth}" Height="{Binding WindowHeight}" CanResize="True">
 
 	<Design.DataContext>
 		<vm:ViewDataVM />
 	</Design.DataContext>
 
-	<Image Margin="20"
+	<Image Margin="10"
 		   Width="{Binding ImageWidth}"
 		   Height="{Binding ImageHeight}"
 		   Source="{Binding ImageSource}" />

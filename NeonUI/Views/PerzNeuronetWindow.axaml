@@ -6,9 +6,9 @@
         xmlns:v="using:NeonUI.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
         x:Class="NeonUI.Views.PerzNeuronetWindow"
-		Width="800" Height="500" 
-		CanResize="False" WindowStartupLocation="CenterOwner"
-        Title="Перцептрон">
+		MinWidth="800" MinHeight="500" Width="800" Height="500"
+		CanResize="True" WindowStartupLocation="CenterOwner"
+        Title="{Binding Title}">
 	
 	<Design.DataContext>
 		<vm:PerzNeuronetVM />
@@ -26,15 +26,15 @@
 			</Button>
 		</StackPanel>
 
-		<Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,*,*" Margin="5">
+		<Grid DockPanel.Dock="Right" RowDefinitions="40,40,40,40" Margin="5">
 			<Grid.Styles>
 				<Style Selector="Button">
-					<Setter Property="HorizontalAlignment" Value="Center" />
+					<Setter Property="Width" Value="140" />
 				</Style>
 			</Grid.Styles>
-			<Button Grid.Column="0" Command="{Binding SaveAsCommand}">Сохранить как</Button>
-			<Button Grid.Column="1" Command="{Binding CloseNetworkCommand}">Выгрузить сеть</Button>
-			<Button Grid.Column="2" Command="{Binding CloseWindowCommand}">Закрыть окно</Button>
+			<Button Grid.Row="0" Command="{Binding CloseWindowCommand}">Закрыть окно</Button>
+			<Button Grid.Row="1" Command="{Binding SaveAsCommand}">Сохранить как</Button>
+			<Button Grid.Row="3" Command="{Binding CloseNetworkCommand}">Выгрузить сеть</Button>
 		</Grid>
 
 		<TabControl Margin="5">
@@ -43,7 +43,7 @@
 					<Label Grid.Row="0" Grid.Column="0" Content="Слои:"></Label>
 					<Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding LayerSizes}"></Label>
 
-					<Button Grid.Row="1" Grid.Column="0" Command="{Binding ExecuteCurrentCommand}">Распознать текущий элемент</Button>
+					<Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ExecuteCurrentCommand}">Распознать текущий элемент</Button>
 
 					<Label Grid.Row="2" Grid.Column="0" Content="Результат:"></Label>
 					<Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding ExecuteCurrentResult}"></Label>
@@ -57,15 +57,16 @@
 			</TabItem>
 
 			<TabItem Header="Тренировка">
-				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50">
+				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50, 50">
 					<Label Grid.Row="0" Grid.Column="0" Content="Инициализация весов:" />
 					<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
 						<RadioButton IsChecked="{Binding IsZeroInitWeights}">Нулями</RadioButton>
 						<RadioButton IsChecked="{Binding !IsZeroInitWeights}" Margin="5,0,0,0">Случайно (-1, 1)</RadioButton>
-						<Button  Command="{Binding InitWeightsCommand}" Margin="5,0,0,0">Инициализировать</Button>
 					</StackPanel>
 
-					<StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
+					<Button Grid.Row="1" Grid.Column="1" Command="{Binding InitWeightsCommand}">Инициализировать</Button>
+
+					<StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
 						<Button  Command="{Binding TrainEpochCommand}" Width="120">Старт эпохи</Button>
 						<Button  Command="{Binding TrainCancelCommand}" Width="120" Margin="5,0,0,0">Стоп</Button>
 						<ProgressBar Value="{Binding TrainPercent}" ShowProgressText="True" Maximum="100" Minimum="0" Width="100" Height="32" Margin="5,0,0,0" />
@@ -74,7 +75,7 @@
 			</TabItem>
 
 			<TabItem Header="Тестирование">
-				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, Auto">
+				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, Auto, Auto">
 					<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
 						<Button  Command="{Binding TestCommand}" Width="120">Старт теста</Button>
 						<Button  Command="{Binding TestCancelCommand}" Width="120" Margin="5,0,0,0">Стоп</Button>
@@ -82,7 +83,8 @@
 					</StackPanel>
 
 					<Label Grid.Row="1" Grid.Column="0" Content="Результаты теста:"></Label>
-					<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding TestResult}" Width="500" Height="250"
+					
+					<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding TestResult}" Width="600" Height="250"
 							 IsReadOnly="True" HorizontalAlignment="Left" TextWrapping="Wrap" FontFamily="Courier New"></TextBox>
 				</Grid>
 			</TabItem>

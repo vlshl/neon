@@ -19,7 +19,7 @@ namespace NeonUI.Views
             _vm.CloseWindow = Close;
         }
 
-        public void Initialize(INetwork nn)
+        public void Initialize(INeuronet nn)
         {
             _vm.Initialize(nn);
         }
