@@ -29,24 +29,24 @@ namespace Core
         {
             return Task.Run(() =>
             {
+                var ds = _dataset.GetDataSource();
                 long ts1 = DateTime.Now.Ticks + ONPROGRESS_STEP;
 
-                long totalCount = _dataset.GetCount() * epochs;
+                long totalCount = ds.GetCount() * epochs;
                 long count = 0;
-                _dataset.SuspendEvents();
 
                 for (int ep = 0; ep < epochs; ++ep)
                 {
                     if (cancel.IsCancellationRequested) break;
 
-                    bool isFirst = _dataset.First();
+                    bool isFirst = ds.First();
                     if (isFirst)
                     {
                         do
                         {
                             if (cancel.IsCancellationRequested) break;
 
-                            var sample = _dataset.GetCurrentSample();
+                            var sample = ds.GetCurrentSample();
                             if (sample == null) continue;
 
                             double[] targets = _converter.ConvertBack(sample.Label);
@@ -60,11 +60,10 @@ namespace Core
                                 ts1 = ts + ONPROGRESS_STEP;
                                 OnProgress?.Invoke(count, totalCount);
                             }
-                        } while (_dataset.Next());
+                        } while (ds.Next());
                     }
                 }
 
-                _dataset.ResumeEvents();
                 OnProgress?.Invoke(count, totalCount);
                 NeuronetManager.Instance.OnTrain(_network);
 

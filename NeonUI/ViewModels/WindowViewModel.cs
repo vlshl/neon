@@ -8,6 +8,6 @@ namespace NeonUI.ViewModels
 {
     public class WindowViewModel : ViewModelBase
     {
-        public Action? CloseWindow { get; set; }
+        public Action? CloseWindowAction { get; set; }
     }
 }

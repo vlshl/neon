@@ -7,6 +7,6 @@
         x:Class="NeonUI.Views.MainWindow"
         Icon="/Assets/logo.ico"
 		WindowState="Maximized"
-        Title="Neon">
-	<v:MainView Name="mainView" />
+        Title="Neon - исследование нейросетей. Версия 1.0 ">
+	<v:MainView Name="mainView" Background="Gainsboro" />
 </Window>

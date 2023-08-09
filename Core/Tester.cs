@@ -1,9 +1,4 @@
 ﻿using Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core
 {
@@ -28,21 +23,22 @@ namespace Core
         {
             return Task.Run(() =>
             {
+                var ds = _dataset.GetDataSource();
+
                 Dictionary<string, TestResult> results = new Dictionary<string, TestResult>();
-                _dataset.SuspendEvents();
                 long ts1 = DateTime.Now.Ticks + ONPROGRESS_STEP;
 
-                long totalCount = _dataset.GetCount();
+                long totalCount = ds.GetCount();
                 long count = 0;
 
-                bool isFirst = _dataset.First();
+                bool isFirst = ds.First();
                 if (isFirst)
                 {
                     do
                     {
                         if (cancel.IsCancellationRequested) break;
 
-                        var sample = _dataset.GetCurrentSample();
+                        var sample = ds.GetCurrentSample();
                         if (sample == null) continue;
 
                         var inputs = sample.GetData();
@@ -72,10 +68,9 @@ namespace Core
                             ts1 = ts + ONPROGRESS_STEP;
                             OnProgress?.Invoke(count, totalCount);
                         }
-                    } while (_dataset.Next());
+                    } while (ds.Next());
                 }
 
-                _dataset.ResumeEvents();
                 OnProgress?.Invoke(count, totalCount);
                 NeuronetManager.Instance.OnExec(_network);
 

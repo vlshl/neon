@@ -1,9 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using System.IO;
-using System;
-using Core;
-using NeonUI.ViewModels;
 
 namespace NeonUI.Views
 {

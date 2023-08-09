@@ -19,28 +19,28 @@
 			<v:MessageUC Name="message"></v:MessageUC>
 		</Panel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
-			<Label Content="Источник данных:"></Label>
+			<Label Content="Набор данных:"></Label>
 			<ComboBox ItemsSource="{Binding DatasetItems}" SelectedItem="{Binding SelectedDatasetItem}" Width="200" Margin="5,0,0,0" />
 			<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
 				<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
 			</Button>
 		</StackPanel>
 
-		<Grid DockPanel.Dock="Right" RowDefinitions="40,40,40,40" Margin="5">
-			<Grid.Styles>
+		<StackPanel DockPanel.Dock="Right" Orientation="Vertical" Margin="5">
+			<StackPanel.Styles>
 				<Style Selector="Button">
 					<Setter Property="Width" Value="140" />
+					<Setter Property="Margin" Value="0,0,0,5" />
 				</Style>
-			</Grid.Styles>
-			<Button Grid.Row="0" Command="{Binding CloseWindowCommand}">Закрыть окно</Button>
+			</StackPanel.Styles>
+			<Button Grid.Row="0" Command="{Binding CloseCommand}">Закрыть сеть</Button>
 			<Button Grid.Row="1" Command="{Binding SaveAsCommand}">Сохранить как</Button>
-			<Button Grid.Row="3" Command="{Binding CloseNetworkCommand}">Выгрузить сеть</Button>
-		</Grid>
+		</StackPanel>
 
 		<TabControl Margin="5">
 			<TabItem Header="Сеть">
 				<Grid ColumnDefinitions="*,*,*" RowDefinitions="50, 50, 50, 50">
-					<Label Grid.Row="0" Grid.Column="0" Content="Слои:"></Label>
+					<Label Grid.Row="0" Grid.Column="0" Content="Структура сети:"></Label>
 					<Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{Binding LayerSizes}"></Label>
 
 					<Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding ExecuteCurrentCommand}">Распознать текущий элемент</Button>
@@ -75,7 +75,7 @@
 			</TabItem>
 
 			<TabItem Header="Тестирование">
-				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, Auto, Auto">
+				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 30, *">
 					<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal">
 						<Button  Command="{Binding TestCommand}" Width="120">Старт теста</Button>
 						<Button  Command="{Binding TestCancelCommand}" Width="120" Margin="5,0,0,0">Стоп</Button>
@@ -83,9 +83,15 @@
 					</StackPanel>
 
 					<Label Grid.Row="1" Grid.Column="0" Content="Результаты теста:"></Label>
-					
-					<TextBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding TestResult}" Width="600" Height="250"
-							 IsReadOnly="True" HorizontalAlignment="Left" TextWrapping="Wrap" FontFamily="Courier New"></TextBox>
+
+					<Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
+						   Padding="5" 
+						   BorderBrush="Gray" BorderThickness="1"
+						   Content="{Binding TestResult}"
+						   HorizontalAlignment="Stretch"
+						   VerticalAlignment="Stretch"
+						   FontFamily="Courier New"></Label>
+
 				</Grid>
 			</TabItem>
 		</TabControl>

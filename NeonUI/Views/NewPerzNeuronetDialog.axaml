@@ -39,17 +39,17 @@
 				</Style>
 			</Grid.Styles>
 
-			<Label Grid.Row="0" Grid.Column="0" Content="Наименование:"/>
+			<Label Grid.Row="0" Grid.Column="0" Content="Наименование сети:"/>
 			<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBox>
 
 			<Label Grid.Row="1" Grid.Column="0" Content="Имя файла:"/>
 			<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileName}"></TextBox>
 
 			<Label Grid.Row="2" Grid.Column="0" Content="Размер входного слоя:"/>
-			<NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding InputLayerSize}" Minimum="1"></NumericUpDown>
+			<NumericUpDown Grid.Row="2" Grid.Column="1" Increment="1"  Value="{Binding InputLayerSize}" Minimum="1"></NumericUpDown>
 
 			<Label Grid.Row="3" Grid.Column="0" Content="Размер выходного слоя:"/>
-			<NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding OutputLayerSize}" Minimum="1"></NumericUpDown>
+			<NumericUpDown Grid.Row="3" Grid.Column="1" Increment="1" Value="{Binding OutputLayerSize}" Minimum="1"></NumericUpDown>
 
 			<Label Grid.Row="4" Grid.Column="0" Content="Размеры скрытых слоев:"/>
 			<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding HiddenLayers}"></TextBox>

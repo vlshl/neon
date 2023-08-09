@@ -2,9 +2,7 @@
 using Avalonia.Media.Imaging;
 using Common;
 using Core;
-using NeonUI.Views;
 using ReactiveUI;
-using System.Linq;
 using System.Windows.Input;
 
 namespace NeonUI.ViewModels;
@@ -17,8 +15,7 @@ public class MnistDatasetVM : WindowViewModel
     public ICommand LastCommand { get; set; }
     public ICommand SetFilterCommand { get; set; }
     public ICommand ClearFilterCommand { get; set; }
-    public ICommand CloseWinCommand { get; set; }
-    public ICommand CloseDsCommand { get; set; }
+    public ICommand CloseCommand { get; set; }
 
     public string Title { get => _title; set => this.RaiseAndSetIfChanged(ref _title, value); }
     public string Info { get => _info; set => this.RaiseAndSetIfChanged(ref _info, value); }
@@ -28,9 +25,8 @@ public class MnistDatasetVM : WindowViewModel
     public int ImageHeight { get => _imageHeight; set => this.RaiseAndSetIfChanged(ref _imageHeight, value); }
     public WriteableBitmap? ImageSource { get => _imageSource; set => this.RaiseAndSetIfChanged(ref _imageSource, value); }
 
-    private IDataset? _ds;
-    private int _dsCount;
-    private int _dsIndex;
+    private IDataset? _dataset;
+    private IDataSource? _dataSource;
     private string _info;
     private string _filter;
     private string _label;
@@ -41,7 +37,8 @@ public class MnistDatasetVM : WindowViewModel
 
     public MnistDatasetVM()
     {
-        _ds = null;
+        _dataset = null;
+        _dataSource = null;
         _info = "";
         _filter = "";
         _label = "";
@@ -50,81 +47,93 @@ public class MnistDatasetVM : WindowViewModel
         _imageSource = null;
         _title = "";
 
-        NextCommand = ReactiveCommand.Create(() => { _ds?.Next(); });
-        PrevCommand = ReactiveCommand.Create(() => { _ds?.Prev(); });
-        FirstCommand = ReactiveCommand.Create(() => { _ds?.First(); });
-        LastCommand = ReactiveCommand.Create(() => { _ds?.Last(); });
+        NextCommand = ReactiveCommand.Create(Next);
+        PrevCommand = ReactiveCommand.Create(Prev);
+        FirstCommand = ReactiveCommand.Create(First);
+        LastCommand = ReactiveCommand.Create(Last);
         SetFilterCommand = ReactiveCommand.Create(SetFilter);
         ClearFilterCommand = ReactiveCommand.Create(ClearFilter);
-        CloseWinCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
-        CloseDsCommand = ReactiveCommand.Create(CloseDs);
+        CloseCommand = ReactiveCommand.Create(Close);
     }
 
-    public void Initialize(IDataset ds)
+    public void Initialize(IDataset dataset)
     {
-        _ds = ds;
-        _ds.OnFilterChange += _ds_OnFilterChange;
-        _ds.OnCurrentChange += _ds_OnCurrentChange;
-        Title = ds.GetName();
-        _ds_OnFilterChange();
-    }
-
-    public void Close()
-    {
-        if (_ds == null) return;
-
-        _ds.OnFilterChange -= _ds_OnFilterChange;
-        _ds.OnCurrentChange -= _ds_OnCurrentChange;
-    }
-
-    private void CloseDs()
-    {
-        if (_ds == null) return;
-
-        DatasetManager.Instance.CloseDataset(_ds);
-        var mainVm = MainWindow.Instance.DataContext as MainVM;
-        if (mainVm != null) mainVm.RefreshDsItems();
-        CloseWindow?.Invoke();
-    }
-
-    private void _ds_OnCurrentChange()
-    {
-        ShowSample(_ds.GetCurrentSample());
-    }
-
-    private void _ds_OnFilterChange()
-    {
-        if (_ds == null) return;
-
-        var f = _ds.GetFilter();
-        if (f != null && f.Any())
-        {
-            Filter = f.First();
-        }
-        else
-        {
-            Filter = "";
-        }
-
+        _dataset = dataset;
+        _dataSource = dataset.GetDefaultDataSource();
+        Title = dataset.GetName();
         RefreshInfo();
-        ShowSample(_ds.GetCurrentSample());
+        ShowSample(_dataSource.GetCurrentSample());
+    }
+
+    private void Close()
+    {
+        CloseWindowAction?.Invoke();
+    }
+
+    public void OnCloseWindow()
+    {
+        if (_dataset != null) DatasetManager.Instance.CloseDataset(_dataset);
     }
 
     private void RefreshInfo()
     {
-        if (_ds == null) return;
-        Info = string.Format("Элеметнов {0}, размер {1}x{2}", _ds.GetCount().ToString(), _ds.GetImageSizeX().ToString(), _ds.GetImageSizeY().ToString());
+        if ((_dataSource == null) || (_dataset == null)) return;
+        Info = string.Format("Элеметнов {0}, размер {1}x{2}", _dataSource.GetCount().ToString(), _dataset.GetImageSizeX().ToString(), _dataset.GetImageSizeY().ToString());
     }
 
     private void SetFilter()
     {
-        _ds?.SetFilter(new string[] { _filter });
+        if (_dataset == null || _dataSource == null) return;
+
+        _dataset.SetFilter(new string[] { _filter });
+        RefreshInfo();
+        ShowSample(_dataSource.GetCurrentSample());
     }
 
     private void ClearFilter()
     {
-        _ds?.ClearFilter();
+        if (_dataset == null || _dataSource == null) return;
+
+        _dataset.ClearFilter();
         Filter = "";
+        RefreshInfo();
+        ShowSample(_dataSource.GetCurrentSample());
+    }
+
+    private void Next()
+    {
+        if (_dataSource == null) return;
+        if (_dataSource.Next())
+        {
+            ShowSample(_dataSource.GetCurrentSample());
+        }
+    }
+
+    private void Prev()
+    {
+        if (_dataSource == null) return;
+        if (_dataSource.Prev())
+        {
+            ShowSample(_dataSource.GetCurrentSample());
+        }
+    }
+
+    private void First()
+    {
+        if (_dataSource == null) return;
+        if (_dataSource.First())
+        {
+            ShowSample(_dataSource.GetCurrentSample());
+        }
+    }
+
+    private void Last()
+    {
+        if (_dataSource == null) return;
+        if (_dataSource.Last())
+        {
+            ShowSample(_dataSource.GetCurrentSample());
+        }
     }
 
     private void ShowSample(Sample? sample)

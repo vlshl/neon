@@ -16,7 +16,7 @@ namespace NeonUI.Views
             _vm = new PerzNeuronetVM();
             DataContext = _vm;
             _vm.MessagePanel = message;
-            _vm.CloseWindow = Close;
+            _vm.CloseWindowAction = Close;
         }
 
         public void Initialize(INeuronet nn)
@@ -27,7 +27,7 @@ namespace NeonUI.Views
         protected override void OnClosing(WindowClosingEventArgs e)
         {
             base.OnClosing(e);
-            _vm.Close();
+            _vm.OnCloseWindow();
         }
 
 

@@ -3,8 +3,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:NeonUI.ViewModels"
-		mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
-		WindowStartupLocation="CenterOwner" CanResize="False" SizeToContent="WidthAndHeight"
+		mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="350"
+		WindowStartupLocation="CenterOwner" CanResize="True"
+		SizeToContent="WidthAndHeight" MinWidth="350" MinHeight="350"
         x:Class="NeonUI.Views.MnistDatasetWindow"
         Title="{Binding Title}">
 
@@ -12,7 +13,7 @@
 		<vm:MnistDatasetVM />
 	</Design.DataContext>
 
-	<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+	<Grid RowDefinitions="40, Auto, *, Auto, 50" Margin="5">
 		<Label Grid.Row="0" Content="{Binding Info}" />
 		
 		<StackPanel Grid.Row="1" Orientation="Horizontal">
@@ -31,7 +32,7 @@
 		<Grid Grid.Row="2" ColumnDefinitions="100,Auto">
 			<Label Grid.Column="0" Content="{Binding Label}" FontSize="20" HorizontalAlignment="Center" />
 
-			<Image Grid.Column="1" Width="{Binding ImageWidth}"
+			<Image Grid.Column="1" Margin="10" Width="{Binding ImageWidth}"
 				   Height="{Binding ImageHeight}"
 				   Source="{Binding ImageSource}" />
 		</Grid>
@@ -61,16 +62,7 @@
 			</Button>
 		</StackPanel>
 
-		<StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center">
-			<StackPanel.Styles>
-				<Style Selector="Button">
-					<Setter Property="Margin" Value="5"></Setter>
-					<Setter Property="Width" Value="150"></Setter>
-				</Style>
-			</StackPanel.Styles>
-			<Button Command="{Binding CloseWinCommand}" ToolTip.Tip="Закрыть окно, источник остается открытым">Закрыть</Button>
-			<Button Command="{Binding CloseDsCommand}" ToolTip.Tip="Закрыть окно и выгрузить источник данных">Выгрузить</Button>
-		</StackPanel>
+		<Button Grid.Row="4" Command="{Binding CloseCommand}" Margin="5" Width="150" HorizontalAlignment="Right" ToolTip.Tip="Закрыть окно и набор данных">Закрыть набор</Button>
 	</Grid>
 
 </Window>

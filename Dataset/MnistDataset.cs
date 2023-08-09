@@ -1,5 +1,4 @@
 ﻿using Common;
-using Newtonsoft.Json;
 
 namespace Dataset
 {
@@ -11,14 +10,8 @@ namespace Dataset
         private readonly MnistSettings _settings;
         private string[]? _filter;
         private List<int> _filterIndexes;
-        private int _currentIndex;
         private List<string> _allLabels;
-        private bool _isEvents;
-        private bool _isFilterChange;
-        private bool _isCurrentChange;
-
-        public event DatasetChangeEH? OnFilterChange;
-        public event DatasetChangeEH? OnCurrentChange;
+        private MnistDataSource _defaultDataSource;
 
         public MnistDataset(MnistSettings settings)
         {
@@ -30,14 +23,8 @@ namespace Dataset
 
             _filter = null;
             _filterIndexes = new List<int>();
-            _currentIndex = -1;
             _allLabels = new List<string>();
-            _isEvents = true;
-            _isFilterChange = false;
-            _isCurrentChange = false;
-
-            OnFilterChange = null;
-            OnCurrentChange = null;
+            _defaultDataSource = new MnistDataSource(this);
         }
 
         public void SetFilter(string[] filter)
@@ -57,27 +44,19 @@ namespace Dataset
                         _filterIndexes.Add(i);
                     }
                 }
-
-                if (_filterIndexes.Any())
-                {
-                    _currentIndex = 0;
-                }
-                else
-                {
-                    _currentIndex = -1;
-                }
-
-                if (_isEvents)
-                {
-                    OnFilterChange?.Invoke(); 
-                    OnCurrentChange?.Invoke();
-                }
-                else
-                {
-                    _isFilterChange = true;
-                    _isCurrentChange = true;
-                }
+                _defaultDataSource.SetIndexes(_filterIndexes.ToArray());
             }
+        }
+
+        public void ClearFilter()
+        {
+            _filter = null;
+            _filterIndexes.Clear();
+            for (int i = 0; i < _labels.Length; ++i)
+            {
+                _filterIndexes.Add(i);
+            }
+            _defaultDataSource.SetIndexes(_filterIndexes.ToArray());
         }
 
         public string[]? GetFilter()
@@ -85,47 +64,14 @@ namespace Dataset
             return _filter;
         }
 
-        public void ClearFilter()
+        public IDataSource GetDataSource()
         {
-            _filter = null;
-            _filterIndexes.Clear();
-            if (_labels.Any())
-            {
-                _currentIndex = 0;
-            }
-            else
-            {
-                _currentIndex = -1;
-            }
-
-            if (_isEvents)
-            {
-                OnFilterChange?.Invoke();
-                OnCurrentChange?.Invoke();
-            }
-            else
-            {
-                _isFilterChange = true;
-                _isCurrentChange = true;
-            }
+            return new MnistDataSource(this, _filterIndexes.ToArray());
         }
 
-        public void SuspendEvents()
+        public IDataSource GetDefaultDataSource()
         {
-            _isEvents = false;
-            _isFilterChange = false;
-            _isCurrentChange = false;
-        }
-
-        public void ResumeEvents()
-        {
-            _isEvents = true;
-
-            if (_isFilterChange) OnFilterChange?.Invoke();
-            if (_isCurrentChange) OnCurrentChange?.Invoke();
-
-            _isFilterChange = false;
-            _isCurrentChange = false;
+            return _defaultDataSource;
         }
 
         public string[] GetAllLabels()
@@ -133,172 +79,16 @@ namespace Dataset
             return _allLabels.ToArray();
         }
 
-        public int GetCount()
+        public int GetAllCount()
         {
-            if (_filter == null)
-            {
-                return _labels.Length;
-            }
-            else
-            {
-                return _filterIndexes.Count;
-            }
+            return _labels.Length;
         }
 
-        public IEnumerable<Sample> GetSamples(int skip = 0, int take = 0)
+        public Sample? GetSample(int index)
         {
-            List<Sample> samples = new List<Sample>();
-            if (_filter == null)
-            {
-                for (int i = 0; i < _labels.Length; ++i)
-                {
-                    samples.Add(new Sample(_labels[i], _images[i], _imgSizeX, _imgSizeY));
-                }
-            }
-            else
-            {
-                for (int k = 0; k < _filterIndexes.Count; ++k)
-                {
-                    int i = _filterIndexes[k];
-                    samples.Add(new Sample(_labels[i], _images[i], _imgSizeX, _imgSizeY));
-                }
-            }
+            if ((index < 0) || (index >= _labels.Length) || (index >= _images.Length)) return null;
 
-            if (take > 0)
-            {
-                return samples.Skip(skip).Take(take);
-            }
-            else
-            {
-                return samples.Skip(skip);
-            }
-        }
-
-        public Sample? GetCurrentSample()
-        {
-            if (_currentIndex < 0) return null;
-
-            if (_filter == null)
-            {
-                return new Sample(_labels[_currentIndex], _images[_currentIndex], _imgSizeX, _imgSizeY);
-            }
-            else
-            {
-                int idx = _filterIndexes[_currentIndex];
-                return new Sample(_labels[idx], _images[idx], _imgSizeX, _imgSizeY);
-            }
-        }
-
-        public bool Next()
-        {
-            if (_currentIndex < 0) return false;
-
-            if (_filter == null)
-            {
-                if (_currentIndex < _labels.Length - 1)
-                {
-                    _currentIndex++;
-                    if (_isEvents)
-                    {
-                        OnCurrentChange?.Invoke();
-                    }
-                    else
-                    {
-                        _isCurrentChange = true;
-                    }
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (_currentIndex < _filterIndexes.Count - 1)
-                {
-                    _currentIndex++;
-                    if (_isEvents)
-                    {
-                        OnCurrentChange?.Invoke();
-                    }
-                    else
-                    {
-                        _isCurrentChange = true;
-                    }
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public bool Prev()
-        {
-            if (_currentIndex > 0)
-            {
-                _currentIndex--;
-                if (_isEvents)
-                {
-                    OnCurrentChange?.Invoke();
-                }
-                else
-                {
-                    _isCurrentChange = true;
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool First()
-        {
-            if (_currentIndex >= 0)
-            {
-                _currentIndex = 0;
-                if (_isEvents)
-                {
-                    OnCurrentChange?.Invoke();
-                }
-                else
-                {
-                    _isCurrentChange = true;
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool Last()
-        {
-            if (_currentIndex < 0) return false;
-
-            if (_filter == null)
-            {
-                _currentIndex = _labels.Length - 1;
-            }
-            else
-            {
-                _currentIndex = _filterIndexes.Count - 1;
-            }
-            if (_isEvents)
-            {
-                OnCurrentChange?.Invoke();
-            }
-            else
-            {
-                _isCurrentChange = true;
-            }
-
-            return true;
+            return new Sample(_labels[index], _images[index], _imgSizeX, _imgSizeY);
         }
 
         public string GetName()

@@ -23,22 +23,32 @@
 					<Setter Property="Command" Value="{Binding Command}"/>
 				</Style>
 			</Menu.Styles>
-			<MenuItem Header="Источники">
+			<MenuItem Header="Данные">
 				<MenuItem Header="Создать" Command="{Binding NewDatasetCommand}" />
 				<MenuItem Header="Открыть" Command="{Binding OpenDatasetCommand}" />
-				<Separator/>
-				<MenuItem Header="Открытые" ItemsSource="{Binding DatasetItems}" />
 				<Separator/>
 				<MenuItem Header="Выход" Command="{Binding ExitCommand}" />
 			</MenuItem>
 			<MenuItem Header="Сети">
 				<MenuItem Header="Создать" Command="{Binding NewNeuronetCommand}" />
 				<MenuItem Header="Открыть" Command="{Binding OpenNeuronetCommand}" />
-				<Separator/>
-				<MenuItem Header="Открытые" ItemsSource="{Binding NeuronetItems}" />
 			</MenuItem>
 		</Menu>
 
-		<Grid />
+		<Grid RowDefinitions="10*, Auto, Auto, Auto, *" ColumnDefinitions="10*, Auto, *" 
+			  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+			  Background="#BDBDBD">
+			<Grid.Styles>
+				<Style Selector="Label">
+					<Setter Property="Foreground" Value="#757575" />
+					<Setter Property="HorizontalAlignment" Value="Center" />
+				</Style>
+			</Grid.Styles>
+			<Label Grid.Row="1" Grid.Column="1" FontSize="16">Neon - исследование нейросетей</Label>
+			<Label Grid.Row="2" Grid.Column="1" FontSize="14">Версия 1.0</Label>
+			<Label Grid.Row="3" Grid.Column="1" FontSize="14">
+				https://github.com/vlshl/neon
+			</Label>
+		</Grid>
 	</DockPanel>
 </UserControl>

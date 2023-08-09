@@ -69,6 +69,12 @@ namespace Core
             return false;
         }
 
+        public bool IsNeuronetOpened(string path)
+        {
+            string fullpath = Path.GetFullPath(path);
+            return _nets.ContainsKey(fullpath);
+        }
+
         public bool OpenNeuronet(string path)
         {
             string fullpath = Path.GetFullPath(path);

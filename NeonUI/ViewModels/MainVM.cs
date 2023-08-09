@@ -19,22 +19,17 @@ public class MainVM : WindowViewModel
     public ICommand OpenNeuronetCommand { get; set; }
     public ICommand ExitCommand { get; set; }
 
-    public ObservableCollection<MenuItem> DatasetItems { get; set; }
-    public ObservableCollection<MenuItem> NeuronetItems { get; set; }
-
     public IMessagePanel? MessagePanel { get; set; }
 
     public MainVM()
     {
         NewDatasetCommand = ReactiveCommand.Create(() => NewDataset());
         OpenDatasetCommand = ReactiveCommand.Create(() => OpenDataset());
-        DatasetItems = new ObservableCollection<MenuItem>();
 
         NewNeuronetCommand = ReactiveCommand.Create(() => NewNeuronet());
         OpenNeuronetCommand = ReactiveCommand.Create(() => OpenNeuronet());
-        NeuronetItems = new ObservableCollection<MenuItem>();
 
-        ExitCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
+        ExitCommand = ReactiveCommand.Create(() => { CloseWindowAction?.Invoke(); });
         MessagePanel = null;
     }
 
@@ -66,11 +61,22 @@ public class MainVM : WindowViewModel
             if (!files.Any()) return;
 
             var path = files.First().Path.AbsolutePath;
-            bool isSuccess = DatasetManager.Instance.OpenDataset(path);
-            if (!isSuccess) return;
+            bool isOpened = DatasetManager.Instance.IsDatasetOpened(path);
+            if (isOpened)
+            {
+                MessagePanel?.ShowMessage("Набор данных уже открыт");
+                return;
+            }
 
-            OpenDataset(path);
-            RefreshDsItems();
+            bool isSuccess = DatasetManager.Instance.OpenDataset(path);
+            if (isSuccess)
+            {
+                OpenDatasetWindow(path);
+            }
+            else
+            {
+                MessagePanel?.ShowMessage("Ошибка при открытии набора данных");
+            }
         }
         catch(Exception ex)
         {
@@ -78,18 +84,7 @@ public class MainVM : WindowViewModel
         }
     }
 
-    public void RefreshDsItems()
-    {
-        DatasetItems.Clear();
-        string[] paths = DatasetManager.Instance.GetDatasetPaths();
-        foreach (string path in paths)
-        {
-            string name = DatasetManager.Instance.GetDatasetName(path);
-            DatasetItems.Add(new MenuItem() { Header = name, Command = ReactiveCommand.Create(() => OpenDataset(path)) });
-        }
-    }
-
-    private void OpenDataset(string path)
+    private void OpenDatasetWindow(string path)
     {
         var ds = DatasetManager.Instance.GetDataset(path);
         if (ds == null) return;
@@ -125,14 +120,26 @@ public class MainVM : WindowViewModel
         if (!files.Any()) return;
 
         var filepath = files.First().Path.AbsolutePath;
-        bool isSuccess = NeuronetManager.Instance.OpenNeuronet(filepath);
-        if (!isSuccess) return;
+        
+        bool isOpened = NeuronetManager.Instance.IsNeuronetOpened(filepath);
+        if (isOpened)
+        {
+            MessagePanel?.ShowMessage("Нейросеть уже открыта");
+            return;
+        }
 
-        OpenNeuronet1(filepath);
-        RefreshNnItems();
+        bool isSuccess = NeuronetManager.Instance.OpenNeuronet(filepath);
+        if (isSuccess)
+        {
+            OpenNeuronetWindow(filepath);
+        }
+        else
+        {
+            MessagePanel?.ShowMessage("Ошибка при открытии нейросети");
+        }
     }
 
-    private void OpenNeuronet1(string path)
+    private void OpenNeuronetWindow(string path)
     {
         var nn = NeuronetManager.Instance.GetNeuronet(path);
         if (nn == null) return;
@@ -140,16 +147,5 @@ public class MainVM : WindowViewModel
         var win = new PerzNeuronetWindow();
         win.Initialize(nn);
         win.Show(MainWindow.Instance);
-    }
-
-    public void RefreshNnItems()
-    {
-        NeuronetItems.Clear();
-        string[] paths = NeuronetManager.Instance.GetNeuronetPaths();
-        foreach (string path in paths)
-        {
-            string name = NeuronetManager.Instance.GetNeuronetName(path);
-            NeuronetItems.Add(new MenuItem() { Header = name, Command = ReactiveCommand.Create(() => OpenNeuronet1(path)) });
-        }
     }
 }

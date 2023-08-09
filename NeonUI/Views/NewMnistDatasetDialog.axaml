@@ -8,7 +8,7 @@
         x:Class="NeonUI.Views.NewMnistDatasetDialog"
 		MinWidth="600" MinHeight="300" Width="600" Height="300"
 		WindowStartupLocation="CenterOwner"
-        Title="Новый источник данных">
+        Title="Новый набора данных">
 
 	<Design.DataContext>
 		<vm:NewMnistDatasetVM />
@@ -32,7 +32,7 @@
 				</Style>
 			</Grid.Styles>
 
-			<Label Grid.Row="0" Grid.Column="0" Content="Наименование:"/>
+			<Label Grid.Row="0" Grid.Column="0" Content="Наименование набора:"/>
 			<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}"></TextBox>
 
 			<Label Grid.Row="1" Grid.Column="0" Content="Имя файла:"/>

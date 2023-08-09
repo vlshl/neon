@@ -24,7 +24,7 @@ public partial class App : Application
             mw.DataContext = vm;
             vm.MessagePanel = mw.MessagePanel;
             desktop.MainWindow = mw;
-            vm.CloseWindow = () => { 
+            vm.CloseWindowAction = () => { 
                 desktop.Shutdown(); 
             };
         }

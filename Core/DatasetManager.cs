@@ -2,8 +2,6 @@
 using Dataset;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Linq;
 
 namespace Core
 {
@@ -51,6 +49,12 @@ namespace Core
             }
 
             return false;
+        }
+
+        public bool IsDatasetOpened(string path)
+        {
+            string fullpath = Path.GetFullPath(path);
+            return _datasets.ContainsKey(fullpath);
         }
 
         public bool OpenDataset(string path)

@@ -27,8 +27,7 @@ public class PerzNeuronetVM : WindowViewModel
     public ICommand TestCommand { get; set; }
     public ICommand TestCancelCommand { get; set; }
     public ICommand SaveAsCommand { get; set; }
-    public ICommand CloseNetworkCommand { get; set; }
-    public ICommand CloseWindowCommand { get; set; }
+    public ICommand CloseCommand { get; set; }
     public ICommand RefreshDatasetItemsCommand { get; set; }
 
     public string Title { get => _title; set => this.RaiseAndSetIfChanged(ref _title, value); }
@@ -76,8 +75,7 @@ public class PerzNeuronetVM : WindowViewModel
         TrainCancelCommand = ReactiveCommand.Create(TrainCancel);
         InitWeightsCommand = ReactiveCommand.Create(InitWeights);
         SaveAsCommand = ReactiveCommand.Create(SaveAs);
-        CloseNetworkCommand = ReactiveCommand.Create(CloseNetwork);
-        CloseWindowCommand = ReactiveCommand.Create(() => { CloseWindow?.Invoke(); });
+        CloseCommand = ReactiveCommand.Create(Close);
         RefreshDatasetItemsCommand = ReactiveCommand.Create(RefreshDatasetItems);
         TestCommand = ReactiveCommand.Create(Test);
         TestCancelCommand = ReactiveCommand.Create(TestCancel);
@@ -127,7 +125,7 @@ public class PerzNeuronetVM : WindowViewModel
             return;
         }
 
-        var sample = ds.GetCurrentSample();
+        Sample? sample = ds.GetDefaultDataSource().GetCurrentSample();
         if (sample == null)
         {
             MessagePanel?.ShowMessage("Не найден текущий элемент в источник данных.");
@@ -154,48 +152,6 @@ public class PerzNeuronetVM : WindowViewModel
         win.Show(MainWindow.Instance);
     }
 
-    private async void TrainEpoch()
-    {
-        if (_nn == null) return;
-        if (SelectedDatasetItem == null)
-        {
-            MessagePanel?.ShowMessage("Не выбран источник данных");
-            return;
-        }
-
-        var ds = _dsMan.GetDataset(SelectedDatasetItem.Key);
-        if (ds == null)
-        {
-            MessagePanel?.ShowMessage("Источник данных закрыт, обновите список.");
-            return;
-        }
-
-        var conv = new PerzConverter(ds.GetAllLabels());
-        _trainCancelSrc = new CancellationTokenSource();
-        var trainer = new Trainer(ds, _nn, conv);
-        trainer.OnProgress = OnTrainProgress;
-        ds.SuspendEvents();
-        bool isComplete = await trainer.TrainEpoch(_trainCancelSrc.Token);
-        ds.ResumeEvents();
-        MessagePanel?.ShowMessage(isComplete ? "Процесс тренировки завершен" : "Процесс тренировки прерван");
-    }
-
-    private void OnTrainProgress(long count, long total)
-    {
-        decimal p = 0;
-        if (total > 0)
-        {
-            p = (decimal)count / total * 100;
-        }
-
-        Dispatcher.UIThread.Invoke(() => { TrainPercent = p; });
-    }
-
-    private void TrainCancel()
-    {
-        _trainCancelSrc?.Cancel();
-    }
-
     private async void SaveAs()
     {
         if (_nn == null) return;
@@ -217,22 +173,60 @@ public class PerzNeuronetVM : WindowViewModel
         {
             _nnMan.SaveAsNeuronet(_nn, file.Path.AbsolutePath);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             MessagePanel?.ShowException(ex);
         }
     }
 
-    private void CloseNetwork()
+    private void Close()
     {
-        if (_nn == null) return;
-        _nnMan.CloseNeuronet(_nn);
-
-        var mainVm = MainWindow.Instance.DataContext as MainVM;
-        if (mainVm != null) mainVm.RefreshNnItems();
-        CloseWindow?.Invoke();
+        CloseWindowAction?.Invoke();
     }
 
+    #region Training
+    private async void TrainEpoch()
+    {
+        if (_nn == null) return;
+        if (SelectedDatasetItem == null)
+        {
+            MessagePanel?.ShowMessage("Не выбран источник данных");
+            return;
+        }
+
+        var ds = _dsMan.GetDataset(SelectedDatasetItem.Key);
+        if (ds == null)
+        {
+            MessagePanel?.ShowMessage("Источник данных закрыт, обновите список.");
+            return;
+        }
+
+        var conv = new PerzConverter(ds.GetAllLabels());
+        _trainCancelSrc = new CancellationTokenSource();
+        var trainer = new Trainer(ds, _nn, conv);
+        trainer.OnProgress = OnTrainProgress;
+        bool isComplete = await trainer.TrainEpoch(_trainCancelSrc.Token);
+        MessagePanel?.ShowMessage(isComplete ? "Процесс тренировки завершен" : "Процесс тренировки прерван");
+    }
+
+    private void OnTrainProgress(long count, long total)
+    {
+        decimal p = 0;
+        if (total > 0)
+        {
+            p = (decimal)count / total * 100;
+        }
+
+        Dispatcher.UIThread.Invoke(() => { TrainPercent = p; });
+    }
+
+    private void TrainCancel()
+    {
+        _trainCancelSrc?.Cancel();
+    }
+    #endregion
+
+    #region Testing
     private async void Test()
     {
         if (_nn == null) return;
@@ -253,21 +247,19 @@ public class PerzNeuronetVM : WindowViewModel
         _testCancelSrc = new CancellationTokenSource();
         var tester = new Tester(ds, _nn, conv);
         tester.OnProgress = OnTesterProgress;
-        ds.SuspendEvents();
         var results = await tester.Test(_testCancelSrc.Token);
-        ds.ResumeEvents();
         if (results != null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Метка\tУспешно\tОшибок\tВсего");
+            sb.AppendLine(string.Format("{0,-10}{1,-20}{2,-20}{3,-10}", "Метка", "Успешно", "Ошибок", "Всего"));
             foreach (var label in results.Keys)
             {
                 var r = results[label];
                 int total = r.Success + r.Error;
-                sb.Append(label + "\t");
-                sb.Append(string.Format("{0} ({1:F2} %)\t", r.Success, (decimal)r.Success / total * 100));
-                sb.Append(string.Format("{0} ({1:F2} %)\t", r.Error, (decimal)r.Error / total * 100));
-                sb.Append(total);
+                sb.Append(string.Format("{0,-10}", label));
+                sb.Append(string.Format("{0,-20}", string.Format("{0,-8} ({1:F2}%)", r.Success, (decimal)r.Success / total * 100)));
+                sb.Append(string.Format("{0,-20}", string.Format("{0,-8} ({1:F2}%)", r.Error, (decimal)r.Error / total * 100)));
+                sb.Append(string.Format("{0,-10}", total));
                 sb.AppendLine();
             }
 
@@ -295,6 +287,7 @@ public class PerzNeuronetVM : WindowViewModel
     {
         _testCancelSrc?.Cancel();
     }
+    #endregion
 
     private void InitWeights()
     {
@@ -311,8 +304,9 @@ public class PerzNeuronetVM : WindowViewModel
         DatasetItems.AddRange(list);
     }
 
-    public void Close()
+    public void OnCloseWindow()
     {
+        if (_nn != null) _nnMan.CloseNeuronet(_nn);
         _trainCancelSrc?.Cancel();
         _testCancelSrc?.Cancel();
     }

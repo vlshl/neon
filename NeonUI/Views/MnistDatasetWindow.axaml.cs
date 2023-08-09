@@ -13,7 +13,7 @@ namespace NeonUI.Views
             InitializeComponent();
             _vm = new MnistDatasetVM();
             DataContext = _vm;
-            _vm.CloseWindow = Close;
+            _vm.CloseWindowAction = Close;
         }
 
         public void Initialize(IDataset ds)
@@ -24,7 +24,7 @@ namespace NeonUI.Views
         protected override void OnClosing(WindowClosingEventArgs e)
         {
             base.OnClosing(e);
-            _vm.Close();
+            _vm.OnCloseWindow();
         }
     }
 }
