@@ -56,7 +56,7 @@
 				</Grid>
 			</TabItem>
 
-			<TabItem Header="Тренировка">
+			<TabItem Header="Обучение">
 				<Grid ColumnDefinitions="*,2*" RowDefinitions="50, 50, 50">
 					<Label Grid.Row="0" Grid.Column="0" Content="Инициализация весов:" />
 					<StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">

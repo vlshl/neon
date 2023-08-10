@@ -206,7 +206,7 @@ public class PerzNeuronetVM : WindowViewModel
         var trainer = new Trainer(ds, _nn, conv);
         trainer.OnProgress = OnTrainProgress;
         bool isComplete = await trainer.TrainEpoch(_trainCancelSrc.Token);
-        MessagePanel?.ShowMessage(isComplete ? "Процесс тренировки завершен" : "Процесс тренировки прерван");
+        MessagePanel?.ShowMessage(isComplete ? "Обучение завершено" : "Обучение прервано");
     }
 
     private void OnTrainProgress(long count, long total)
