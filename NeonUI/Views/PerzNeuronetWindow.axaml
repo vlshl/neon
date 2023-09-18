@@ -22,7 +22,7 @@
 			<Label Content="Набор данных:"></Label>
 			<ComboBox ItemsSource="{Binding DatasetItems}" SelectedItem="{Binding SelectedDatasetItem}" Width="200" Margin="5,0,0,0" />
 			<Button Command="{Binding RefreshDatasetItemsCommand}" Margin="5, 0, 0, 0" >
-				<Image Source="avares://NeonUI/Assets/refresh.png" Width="16" Height="16" />
+				<Image Source="avares://Neon/Assets/refresh.png" Width="16" Height="16" />
 			</Button>
 		</StackPanel>
 

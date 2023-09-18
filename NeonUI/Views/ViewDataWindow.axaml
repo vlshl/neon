@@ -25,13 +25,13 @@
 			</StackPanel.Styles>
 			<Button Command="{Binding ZoomInCommand}">
 				<StackPanel Orientation="Horizontal">
-					<Image Source="avares://NeonUI/Assets/zoom_in.png" />
+					<Image Source="avares://Neon/Assets/zoom_in.png" />
 					<TextBlock>Увелич</TextBlock>
 				</StackPanel>
 			</Button>
 			<Button Command="{Binding ZoomOutCommand}">
 				<StackPanel Orientation="Horizontal">
-					<Image Source="avares://NeonUI/Assets/zoom_out.png" />
+					<Image Source="avares://Neon/Assets/zoom_out.png" />
 					<TextBlock>Уменьш</TextBlock>
 				</StackPanel>
 			</Button>

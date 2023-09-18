@@ -8,7 +8,7 @@
 		<Grid ColumnDefinitions="10,*,Auto">
 			<TextBlock Grid.Column="1" Name="tbMessage" VerticalAlignment="Center" Text="hello" />
 			<Button Grid.Column="2" Click="OnClose_Click" Background="Transparent" BorderThickness="0">
-				<Image Source="avares://NeonUI/Assets/close.png" Width="16" Height="16" />
+				<Image Source="avares://Neon/Assets/close.png" Width="16" Height="16" />
 			</Button>
 		</Grid>
 	</Border>

@@ -49,16 +49,16 @@
 				</Style>
 			</StackPanel.Styles>
 			<Button Name="btnFirst" Command="{Binding FirstCommand}" ToolTip.Tip="Первый">
-				<Image Source="avares://NeonUI/Assets/first.png" />
+				<Image Source="avares://Neon/Assets/first.png" />
 			</Button>
 			<Button Name="btnMinus" Command="{Binding PrevCommand}" ToolTip.Tip="Предыдущий">
-				<Image Source="avares://NeonUI/Assets/prev.png" />
+				<Image Source="avares://Neon/Assets/prev.png" />
 			</Button>
 			<Button Name="btnPlus" Command="{Binding NextCommand}" ToolTip.Tip="Следующий">
-				<Image Source="avares://NeonUI/Assets/next.png" />
+				<Image Source="avares://Neon/Assets/next.png" />
 			</Button>
 			<Button Name="btnLast" Command="{Binding LastCommand}" ToolTip.Tip="Последний">
-				<Image Source="avares://NeonUI/Assets/last.png" />
+				<Image Source="avares://Neon/Assets/last.png" />
 			</Button>
 		</StackPanel>
 

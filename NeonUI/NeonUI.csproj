@@ -7,6 +7,9 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+    <RepositoryUrl>https://github.com/vlshl/neon</RepositoryUrl>
+    <Copyright>Vladimir Shlyahov</Copyright>
+    <AssemblyName>Neon</AssemblyName>
   </PropertyGroup>
 
   

@@ -13,9 +13,8 @@ namespace Perz
         {
             _settings = settings;
             _hiddenLayers = new List<HiddenLayer>();
-            ILayer prev;
             _inputLayer = new InputLayer(settings.InputSize);
-            prev = _inputLayer;
+            ILayer prev = _inputLayer;
             foreach (var size in settings.HiddenLayerSizes)
             {
                 HiddenLayer h = new HiddenLayer(prev, size);
